@@ -4,8 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 DB_NAME = "clipster.db"
 
 
-# ================= CONNECTION =================
-
 def get_connection():
     return sqlite3.connect(DB_NAME)
 
@@ -17,7 +15,6 @@ def init_db():
     conn = get_connection()
     cur = conn.cursor()
 
-    # USERS
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         username TEXT PRIMARY KEY,
@@ -26,7 +23,6 @@ def init_db():
     )
     """)
 
-    # TASKS
     cur.execute("""
     CREATE TABLE IF NOT EXISTS tasks (
         task_id TEXT PRIMARY KEY,
@@ -34,11 +30,13 @@ def init_db():
         status TEXT,
         pages TEXT,
         limit_count INTEGER,
-        created_at TEXT
+        created_at TEXT,
+        cancelled INTEGER DEFAULT 0,
+        progress INTEGER DEFAULT 0,
+        current_page TEXT
     )
     """)
 
-    # RESULTS
     cur.execute("""
     CREATE TABLE IF NOT EXISTS results (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,7 +53,6 @@ def init_db():
 # ================= USERS =================
 
 def create_user(username, password):
-
     conn = get_connection()
     cur = conn.cursor()
 
@@ -71,7 +68,6 @@ def create_user(username, password):
 
 
 def get_user(username):
-
     conn = get_connection()
     cur = conn.cursor()
 
@@ -82,13 +78,11 @@ def get_user(username):
     """, (username,))
 
     user = cur.fetchone()
-
     conn.close()
     return user
 
 
 def verify_user(username, password):
-
     user = get_user(username)
 
     if not user:
@@ -100,14 +94,13 @@ def verify_user(username, password):
 # ================= TASKS =================
 
 def save_task(task_id, username, status, pages, limit_count, created_at):
-
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute("""
     INSERT INTO tasks
-    (task_id, username, status, pages, limit_count, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
+    (task_id, username, status, pages, limit_count, created_at, cancelled, progress, current_page)
+    VALUES (?, ?, ?, ?, ?, ?, 0, 0, '')
     """, (task_id, username, status, pages, limit_count, created_at))
 
     conn.commit()
@@ -115,7 +108,6 @@ def save_task(task_id, username, status, pages, limit_count, created_at):
 
 
 def update_task_status(task_id, status):
-
     conn = get_connection()
     cur = conn.cursor()
 
@@ -129,15 +121,42 @@ def update_task_status(task_id, status):
     conn.close()
 
 
-# ================= FIXED: TASK LIST (IMPORTANT) =================
-
-def get_all_tasks():
-
+def update_progress(task_id, progress, current_page=""):
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute("""
-    SELECT task_id, username, status, pages, limit_count, created_at
+    UPDATE tasks
+    SET progress=?, current_page=?
+    WHERE task_id=?
+    """, (progress, current_page, task_id))
+
+    conn.commit()
+    conn.close()
+
+
+def cancel_task_flag(task_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    UPDATE tasks
+    SET cancelled=1, status='cancelled'
+    WHERE task_id=?
+    """, (task_id,))
+
+    conn.commit()
+    conn.close()
+
+
+# ================= TASK FETCH =================
+
+def get_all_tasks():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT task_id, username, status, pages, limit_count, created_at, cancelled, progress, current_page
     FROM tasks
     ORDER BY created_at DESC
     """)
@@ -145,7 +164,6 @@ def get_all_tasks():
     rows = cur.fetchall()
     conn.close()
 
-    # ✅ FIX: convert tuples → dicts (this fixes your crash)
     return [
         {
             "task_id": r[0],
@@ -153,14 +171,16 @@ def get_all_tasks():
             "status": r[2],
             "pages": r[3],
             "limit": r[4],
-            "created_at": r[5]
+            "created_at": r[5],
+            "cancelled": r[6],
+            "progress": r[7],
+            "current_page": r[8]
         }
         for r in rows
     ]
 
 
 def get_task_info(task_id):
-
     conn = get_connection()
     cur = conn.cursor()
 
@@ -172,14 +192,12 @@ def get_task_info(task_id):
 
     row = cur.fetchone()
     conn.close()
-
     return row
 
 
 # ================= RESULTS =================
 
 def save_result(task_id, reel_url, duration):
-
     conn = get_connection()
     cur = conn.cursor()
 
@@ -193,7 +211,6 @@ def save_result(task_id, reel_url, duration):
 
 
 def get_task_results(task_id):
-
     conn = get_connection()
     cur = conn.cursor()
 
@@ -202,9 +219,12 @@ def get_task_results(task_id):
     FROM results
     WHERE task_id=?
     ORDER BY duration DESC
-    """, (task_id,))
+    """)
 
     rows = cur.fetchall()
     conn.close()
 
-    return rows
+    return [
+        {"url": r[0], "duration": r[1]}
+        for r in rows
+    ]
