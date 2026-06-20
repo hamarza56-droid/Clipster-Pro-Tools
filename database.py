@@ -202,7 +202,7 @@ def get_task_results(task_id):
     FROM results
     WHERE task_id=?
     ORDER BY duration DESC
-    """)
+    """, (task_id,))
 
     rows = cur.fetchall()
     conn.close()
