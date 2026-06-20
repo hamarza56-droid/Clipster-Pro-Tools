@@ -18,16 +18,15 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install system dependencies (Chrome)
+      - name: Install Chromium + dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser chromium-chromedriver
 
       - name: Install Python dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Run worker
         env:
-          DISPLAY: ":99"
+          BASE_URL: https://clipster-pro-tools.onrender.com
         run: python worker.py
