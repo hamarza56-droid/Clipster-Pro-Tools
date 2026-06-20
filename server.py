@@ -1,279 +1,209 @@
-import os
+from database import *
+from flask import Flask, request, jsonify, render_template, session, redirect
 import time
-import json
-import ast
-import requests
+import hashlib
+import random
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
+app = Flask(__name__)
+app.secret_key = "clipster_secret_key_123"
 
-
-BASE_URL = os.getenv(
-    "BASE_URL",
-    "https://clipster-pro-tools.onrender.com"
-)
+init_db()
 
 
-# ================= FETCH TASKS =================
+# ================= AUTH HELPERS =================
 
-def get_tasks():
-    try:
-        res = requests.get(BASE_URL + "/pending_tasks", timeout=30)
-
-        print("Pending tasks response:", res.status_code)
-
-        return res.json()
-
-    except Exception as e:
-        print("Error fetching tasks:", e)
-        return []
+def hash_password(p):
+    return hashlib.sha256(p.encode()).hexdigest()
 
 
-# ================= PUSH RESULT =================
-
-def push_result(task_id, reel, duration):
-    try:
-        r = requests.post(
-            BASE_URL + "/push_result",
-            json={
-                "task_id": task_id,
-                "reel": reel,
-                "duration": duration
-            },
-            timeout=30
-        )
-
-        print(
-            f"Result pushed -> {task_id} | {duration}s | {r.status_code}"
-        )
-
-    except Exception as e:
-        print("Push error:", e)
+def generate_api_key():
+    return str(random.randint(100000, 999999)) + str(int(time.time()))
 
 
-# ================= CHROME DRIVER =================
+# ================= HOME =================
 
-def init_driver():
+@app.route("/")
+def home():
+    if "user" not in session:
+        return redirect("/login")
+    return render_template("index.html")
 
-    options = Options()
 
-    options.add_argument("--headless=new")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1920,1080")
+# ================= LOGIN =================
 
-    # GitHub Actions paths
-    options.binary_location = "/usr/bin/chromium-browser"
+@app.route("/login", methods=["GET", "POST"])
+def login():
 
-    service = Service("/usr/bin/chromedriver")
+    if request.method == "GET":
+        return render_template("login.html")
 
-    driver = webdriver.Chrome(
-        service=service,
-        options=options
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT api_key
+        FROM users
+        WHERE username=? AND password=?
+    """, (username, hash_password(password)))
+
+    user = cur.fetchone()
+    conn.close()
+
+    if user:
+        session["user"] = username
+        return jsonify({
+            "status": "success",
+            "api_key": user[0]
+        })
+
+    return jsonify({"status": "fail"})
+
+
+# ================= REGISTER =================
+
+@app.route("/register", methods=["POST"])
+def register():
+
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT username FROM users WHERE username=?", (username,))
+    if cur.fetchone():
+        return jsonify({"status": "error", "msg": "user exists"})
+
+    hashed = hash_password(password)
+    api_key = generate_api_key()
+
+    cur.execute("""
+        INSERT INTO users(username, password, api_key)
+        VALUES (?, ?, ?)
+    """, (username, hashed, api_key))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "registered"})
+
+
+# ================= LOGOUT =================
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
+
+
+# ================= CREATE TASK =================
+
+@app.route("/create_task", methods=["POST"])
+def create_task():
+
+    if "user" not in session:
+        return jsonify({"error": "not logged in"})
+
+    data = request.json
+    username = session["user"]
+
+    task_id = str(int(time.time()))
+
+    save_task(
+        task_id,
+        username,
+        "running",
+        str(data.get("pages", [])),
+        data.get("limit", 100),
+        time.strftime("%Y-%m-%d %H:%M:%S")
     )
 
-    return driver
+    return jsonify({
+        "task_id": task_id,
+        "status": "queued"
+    })
 
+# ================= TASK =================
 
-# ================= LOGIN WITH COOKIES =================
+@app.route("/get_task/<task_id>")
+def get_task(task_id):
+    return jsonify({
+        "task": get_task_info(task_id),
+        "results": get_task_results(task_id)
+    })
 
-def load_instagram_cookies(driver):
 
-    if not os.path.exists("cookies.json"):
-        print("cookies.json not found")
-        return
+# ================= STATS =================
 
-    try:
+@app.route("/stats")
+def stats():
 
-        driver.get("https://www.instagram.com/")
-        time.sleep(5)
+    conn = get_connection()
+    cur = conn.cursor()
 
-        with open("cookies.json", "r", encoding="utf-8") as f:
-            cookies = json.load(f)
+    cur.execute("SELECT COUNT(*) FROM tasks")
+    total_tasks = cur.fetchone()[0]
 
-        for cookie in cookies:
+    cur.execute("SELECT COUNT(*) FROM results")
+    total_reels = cur.fetchone()[0]
 
-            try:
-                driver.add_cookie(cookie)
-            except Exception as e:
-                print("Cookie skipped:", e)
+    cur.execute("SELECT COUNT(*) FROM tasks WHERE status='running'")
+    running = cur.fetchone()[0]
 
-        driver.refresh()
-        time.sleep(5)
+    cur.execute("SELECT COUNT(*) FROM tasks WHERE status='done'")
+    done = cur.fetchone()[0]
 
-        print("Instagram cookies loaded")
+    conn.close()
 
-    except Exception as e:
-        print("Cookie load error:", e)
+    return jsonify({
+        "total_tasks": total_tasks,
+        "total_reels": total_reels,
+        "running_tasks": running,
+        "completed_tasks": done
+    })
 
 
-# ================= SCRAPE REELS =================
+# ================= TASK QUEUE API =================
 
-def collect_reels(driver, page, limit=10):
+@app.route("/pending_tasks")
+def pending_tasks():
+    tasks = get_all_tasks()
 
-    reels = set()
+    pending = []
 
-    try:
+    for t in tasks:
+        pending.append({
+            "task_id": t[0],
+            "username": t[1],
+            "status": t[2],
+            "created_at": t[3]
+        })
 
-        print("Opening page:", page)
+    return jsonify(pending)
 
-        driver.get(page + "/reels/")
-        time.sleep(8)
+# ================= PUSH RESULT API =================
 
-        for scroll in range(10):
+@app.route("/push_result", methods=["POST"])
+def push_result():
 
-            print(f"Scroll {scroll + 1}")
+    data = request.json
 
-            links = driver.find_elements("tag name", "a")
+    task_id = data["task_id"]
+    reel = data["reel"]
+    duration = data["duration"]
 
-            print("Links found:", len(links))
+    save_result(task_id, reel, duration)
 
-            for link in links:
+    return jsonify({"status": "ok"})
 
-                try:
-                    href = link.get_attribute("href")
 
-                    if href and "/reel/" in href:
-                        reels.add(href)
-
-                except:
-                    pass
-
-            print("Current reels:", len(reels))
-
-            if len(reels) >= limit:
-                break
-
-            driver.execute_script(
-                "window.scrollTo(0, document.body.scrollHeight);"
-            )
-
-            time.sleep(3)
-
-    except Exception as e:
-        print("Scrape error:", e)
-
-    return list(reels)
-
-
-# ================= MAIN WORKER =================
-
-def run():
-
-    tasks = get_tasks()
-
-    if not tasks:
-        print("No tasks found")
-        return
-
-    print("Tasks received:", len(tasks))
-
-    driver = init_driver()
-
-    load_instagram_cookies(driver)
-
-    for task in tasks:
-
-        task_id = task["task_id"]
-
-        print("\n==============================")
-        print("Processing task:", task_id)
-        print("==============================")
-
-        try:
-
-            full = requests.get(
-                f"{BASE_URL}/get_task/{task_id}",
-                timeout=30
-            ).json()
-
-            task_data = full.get("task", [])
-
-        except Exception as e:
-            print("Task fetch error:", e)
-            continue
-
-        if not task_data:
-            print("Task data missing")
-            continue
-
-        pages = task_data[3]
-        limit = task_data[4]
-
-        try:
-            pages = ast.literal_eval(pages)
-        except Exception as e:
-            print("Pages parse error:", e)
-            pages = []
-
-        print("Pages:", pages)
-        print("Limit:", limit)
-
-        for page in pages:
-
-            reels = collect_reels(
-                driver,
-                page,
-                limit
-            )
-
-            print("Total reels collected:", len(reels))
-
-            for reel in reels:
-
-                try:
-
-                    print("Checking reel:", reel)
-
-                    driver.get(reel)
-                    time.sleep(5)
-
-                    videos = driver.find_elements(
-                        "tag name",
-                        "video"
-                    )
-
-                    print(
-                        "Videos found:",
-                        len(videos)
-                    )
-
-                    if not videos:
-                        continue
-
-                    duration = driver.execute_script(
-                        "return arguments[0].duration;",
-                        videos[0]
-                    )
-
-                    print(
-                        "Duration:",
-                        duration
-                    )
-
-                    if duration and 28 <= duration <= 41:
-
-                        print(
-                            "MATCH FOUND:",
-                            reel,
-                            duration
-                        )
-
-                        push_result(
-                            task_id,
-                            reel,
-                            round(duration, 2)
-                        )
-
-                except Exception as e:
-                    print("Reel error:", e)
-
-    driver.quit()
-
-    print("Worker completed")
-
+# ================= START =================
 
 if __name__ == "__main__":
-    run()
+    init_db()
+    app.run(debug=True)
