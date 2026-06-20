@@ -8,6 +8,8 @@ def get_connection():
     return sqlite3.connect(DB_NAME)
 
 
+# ================= INIT DB =================
+
 def init_db():
 
     conn = get_connection()
@@ -60,10 +62,7 @@ def create_user(username, password):
     cur.execute("""
     INSERT INTO users(username,password)
     VALUES (?,?)
-    """, (
-        username,
-        hashed
-    ))
+    """, (username, hashed))
 
     conn.commit()
     conn.close()
@@ -83,7 +82,6 @@ def get_user(username):
     user = cur.fetchone()
 
     conn.close()
-
     return user
 
 
@@ -94,54 +92,27 @@ def verify_user(username, password):
     if not user:
         return False
 
-    return check_password_hash(
-        user[1],
-        password
-    )
+    return check_password_hash(user[1], password)
 
 
 # ================= TASKS =================
 
-def save_task(
-    task_id,
-    username,
-    status,
-    pages,
-    limit_count,
-    created_at
-):
+def save_task(task_id, username, status, pages, limit_count, created_at):
 
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute("""
     INSERT INTO tasks
-    (
-        task_id,
-        username,
-        status,
-        pages,
-        limit_count,
-        created_at
-    )
-    VALUES (?,?,?,?,?,?)
-    """, (
-        task_id,
-        username,
-        status,
-        pages,
-        limit_count,
-        created_at
-    ))
+    (task_id, username, status, pages, limit_count, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+    """, (task_id, username, status, pages, limit_count, created_at))
 
     conn.commit()
     conn.close()
 
 
-def update_task_status(
-    task_id,
-    status
-):
+def update_task_status(task_id, status):
 
     conn = get_connection()
     cur = conn.cursor()
@@ -150,14 +121,13 @@ def update_task_status(
     UPDATE tasks
     SET status=?
     WHERE task_id=?
-    """, (
-        status,
-        task_id
-    ))
+    """, (status, task_id))
 
     conn.commit()
     conn.close()
 
+
+# ================= NEW: ALL TASKS =================
 
 def get_all_tasks():
 
@@ -175,7 +145,6 @@ def get_all_tasks():
     """)
 
     rows = cur.fetchall()
-
     conn.close()
 
     return rows
@@ -193,7 +162,6 @@ def get_task_info(task_id):
     """, (task_id,))
 
     row = cur.fetchone()
-
     conn.close()
 
     return row
@@ -201,28 +169,15 @@ def get_task_info(task_id):
 
 # ================= RESULTS =================
 
-def save_result(
-    task_id,
-    reel_url,
-    duration
-):
+def save_result(task_id, reel_url, duration):
 
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute("""
-    INSERT INTO results
-    (
-        task_id,
-        reel_url,
-        duration
-    )
-    VALUES (?,?,?)
-    """, (
-        task_id,
-        reel_url,
-        duration
-    ))
+    INSERT INTO results(task_id, reel_url, duration)
+    VALUES (?, ?, ?)
+    """, (task_id, reel_url, duration))
 
     conn.commit()
     conn.close()
@@ -234,16 +189,13 @@ def get_task_results(task_id):
     cur = conn.cursor()
 
     cur.execute("""
-    SELECT
-        reel_url,
-        duration
+    SELECT reel_url, duration
     FROM results
     WHERE task_id=?
     ORDER BY duration DESC
     """, (task_id,))
 
     rows = cur.fetchall()
-
     conn.close()
 
     return rows
