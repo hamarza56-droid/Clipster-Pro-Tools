@@ -8,11 +8,36 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
-
 BASE_URL = os.getenv(
     "BASE_URL",
     "https://clipster-pro-tools.onrender.com"
 )
+
+# ================= LOG TO SERVER =================
+
+def send_log(task_id, msg):
+    try:
+        requests.post(
+            BASE_URL + "/log",
+            json={
+                "task_id": task_id,
+                "msg": msg
+            },
+            timeout=10
+        )
+    except:
+        pass
+
+
+# ================= CHECK CANCEL =================
+
+def is_cancelled(task_id):
+    try:
+        res = requests.get(f"{BASE_URL}/task_status/{task_id}")
+        data = res.json()
+        return data.get("cancelled", False)
+    except:
+        return False
 
 
 # ================= FETCH TASKS =================
@@ -20,13 +45,8 @@ BASE_URL = os.getenv(
 def get_tasks():
     try:
         res = requests.get(BASE_URL + "/pending_tasks", timeout=30)
-
-        print("Pending tasks response:", res.status_code)
-
         return res.json()
-
-    except Exception as e:
-        print("Error fetching tasks:", e)
+    except:
         return []
 
 
@@ -34,245 +54,147 @@ def get_tasks():
 
 def push_result(task_id, reel, duration):
     try:
-        r = requests.post(
+        requests.post(
             BASE_URL + "/push_result",
             json={
                 "task_id": task_id,
                 "reel": reel,
                 "duration": duration
-            },
-            timeout=30
+            }
         )
-
-        print(
-            f"Result pushed -> {task_id} | {duration}s | {r.status_code}"
-        )
-
-    except Exception as e:
-        print("Push error:", e)
+    except:
+        pass
 
 
-# ================= CHROME DRIVER =================
+# ================= DRIVER =================
 
 def init_driver():
-
     options = Options()
 
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1920,1080")
 
-    # GitHub Actions paths
     options.binary_location = "/usr/bin/chromium-browser"
 
     service = Service("/usr/bin/chromedriver")
 
-    driver = webdriver.Chrome(
-        service=service,
-        options=options
-    )
-
-    return driver
+    return webdriver.Chrome(service=service, options=options)
 
 
-# ================= LOGIN WITH COOKIES =================
+# ================= SCRAPE =================
 
-def load_instagram_cookies(driver):
-
-    if not os.path.exists("cookies.json"):
-        print("cookies.json not found")
-        return
-
-    try:
-
-        driver.get("https://www.instagram.com/")
-        time.sleep(5)
-
-        with open("cookies.json", "r", encoding="utf-8") as f:
-            cookies = json.load(f)
-
-        for cookie in cookies:
-
-            try:
-                driver.add_cookie(cookie)
-            except Exception as e:
-                print("Cookie skipped:", e)
-
-        driver.refresh()
-        time.sleep(5)
-
-        print("Instagram cookies loaded")
-
-    except Exception as e:
-        print("Cookie load error:", e)
-
-
-# ================= SCRAPE REELS =================
-
-def collect_reels(driver, page, limit=10):
+def collect_reels(driver, page, limit, task_id):
 
     reels = set()
 
-    try:
+    send_log(task_id, f"Opening page {page}")
 
-        print("Opening page:", page)
+    driver.get(page + "/reels/")
+    time.sleep(5)
 
-        driver.get(page + "/reels/")
-        time.sleep(8)
+    for i in range(8):
 
-        for scroll in range(10):
+        if is_cancelled(task_id):
+            send_log(task_id, "❌ Task cancelled")
+            return []
 
-            print(f"Scroll {scroll + 1}")
+        send_log(task_id, f"Scroll {i+1}")
 
-            links = driver.find_elements("tag name", "a")
+        links = driver.find_elements("tag name", "a")
 
-            print("Links found:", len(links))
+        for link in links:
+            href = link.get_attribute("href")
+            if href and "/reel/" in href:
+                reels.add(href)
 
-            for link in links:
+        send_log(task_id, f"Found {len(reels)} reels")
 
-                try:
-                    href = link.get_attribute("href")
+        if len(reels) >= limit:
+            break
 
-                    if href and "/reel/" in href:
-                        reels.add(href)
-
-                except:
-                    pass
-
-            print("Current reels:", len(reels))
-
-            if len(reels) >= limit:
-                break
-
-            driver.execute_script(
-                "window.scrollTo(0, document.body.scrollHeight);"
-            )
-
-            time.sleep(3)
-
-    except Exception as e:
-        print("Scrape error:", e)
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(2)
 
     return list(reels)
 
 
-# ================= MAIN WORKER =================
+# ================= MAIN =================
 
 def run():
 
     tasks = get_tasks()
 
     if not tasks:
-        print("No tasks found")
+        print("No tasks")
         return
 
-    print("Tasks received:", len(tasks))
-
     driver = init_driver()
-
-    load_instagram_cookies(driver)
 
     for task in tasks:
 
         task_id = task["task_id"]
 
-        print("\n==============================")
-        print("Processing task:", task_id)
-        print("==============================")
+        send_log(task_id, "🚀 Starting task")
 
         try:
-
-            full = requests.get(
-                f"{BASE_URL}/get_task/{task_id}",
-                timeout=30
-            ).json()
-
+            full = requests.get(f"{BASE_URL}/get_task/{task_id}").json()
             task_data = full.get("task", [])
-
-        except Exception as e:
-            print("Task fetch error:", e)
+        except:
             continue
 
-        if not task_data:
-            print("Task data missing")
-            continue
-
-        pages = task_data[3]
+        pages = ast.literal_eval(task_data[3])
         limit = task_data[4]
 
-        try:
-            pages = ast.literal_eval(pages)
-        except Exception as e:
-            print("Pages parse error:", e)
-            pages = []
-
-        print("Pages:", pages)
-        print("Limit:", limit)
+        total_pages = len(pages)
+        done_pages = 0
 
         for page in pages:
 
-            reels = collect_reels(
-                driver,
-                page,
-                limit
-            )
+            if is_cancelled(task_id):
+                send_log(task_id, "❌ Cancelled before page")
+                break
 
-            print("Total reels collected:", len(reels))
+            send_log(task_id, f"Processing page {page}")
+
+            reels = collect_reels(driver, page, limit, task_id)
+
+            done_pages += 1
+
+            send_log(
+                task_id,
+                f"Progress {int((done_pages/total_pages)*100)}%"
+            )
 
             for reel in reels:
 
-                try:
+                if is_cancelled(task_id):
+                    send_log(task_id, "❌ Cancelled mid-scrape")
+                    break
 
-                    print("Checking reel:", reel)
+                driver.get(reel)
+                time.sleep(4)
 
-                    driver.get(reel)
-                    time.sleep(5)
+                videos = driver.find_elements("tag name", "video")
 
-                    videos = driver.find_elements(
-                        "tag name",
-                        "video"
-                    )
+                if not videos:
+                    continue
 
-                    print(
-                        "Videos found:",
-                        len(videos)
-                    )
+                duration = driver.execute_script(
+                    "return arguments[0].duration;",
+                    videos[0]
+                )
 
-                    if not videos:
-                        continue
+                if duration and 28 <= duration <= 41:
 
-                    duration = driver.execute_script(
-                        "return arguments[0].duration;",
-                        videos[0]
-                    )
+                    send_log(task_id, f"✔ Match {duration}s")
 
-                    print(
-                        "Duration:",
-                        duration
-                    )
+                    push_result(task_id, reel, round(duration, 2))
 
-                    if duration and 28 <= duration <= 41:
-
-                        print(
-                            "MATCH FOUND:",
-                            reel,
-                            duration
-                        )
-
-                        push_result(
-                            task_id,
-                            reel,
-                            round(duration, 2)
-                        )
-
-                except Exception as e:
-                    print("Reel error:", e)
+        send_log(task_id, "✅ Task completed")
 
     driver.quit()
-
-    print("Worker completed")
 
 
 if __name__ == "__main__":
