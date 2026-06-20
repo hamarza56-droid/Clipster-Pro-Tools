@@ -9,17 +9,12 @@ app.secret_key = "clipster_secret_key_123"
 
 init_db()
 
-active_tasks = {}
-cancel_flags = {}
 
 # ================= AUTH =================
 
 def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
-
-def generate_api_key():
-    return str(random.randint(100000, 999999)) + str(int(time.time()))
 
 # ================= HOME =================
 
@@ -29,17 +24,15 @@ def home():
         return redirect("/login")
     return render_template("index.html")
 
+
 # ================= LOGIN =================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-
     if request.method == "GET":
         return render_template("login.html")
 
     data = request.json
-    username = data.get("username")
-    password = data.get("password")
 
     conn = get_connection()
     cur = conn.cursor()
@@ -48,53 +41,16 @@ def login():
         SELECT api_key
         FROM users
         WHERE username=? AND password=?
-    """, (username, hash_password(password)))
+    """, (data["username"], hash_password(data["password"])))
 
     user = cur.fetchone()
     conn.close()
 
     if user:
-        session["user"] = username
-        return jsonify({"status": "success", "api_key": user[0]})
+        session["user"] = data["username"]
+        return jsonify({"status": "success"})
 
     return jsonify({"status": "fail"})
-
-
-# ================= REGISTER =================
-
-@app.route("/register", methods=["POST"])
-def register():
-
-    data = request.json
-    username = data.get("username")
-    password = data.get("password")
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("SELECT username FROM users WHERE username=?", (username,))
-    if cur.fetchone():
-        return jsonify({"status": "error", "msg": "user exists"})
-
-    api_key = generate_api_key()
-
-    cur.execute("""
-        INSERT INTO users(username, password, api_key)
-        VALUES (?, ?, ?)
-    """, (username, hash_password(password), api_key))
-
-    conn.commit()
-    conn.close()
-
-    return jsonify({"status": "registered"})
-
-
-# ================= LOGOUT =================
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/login")
 
 
 # ================= CREATE TASK =================
@@ -106,13 +62,11 @@ def create_task():
         return jsonify({"error": "not logged in"})
 
     data = request.json
-    username = session["user"]
-
     task_id = str(int(time.time()))
 
     save_task(
         task_id,
-        username,
+        session["user"],
         "running",
         str(data.get("pages", [])),
         data.get("limit", 10),
@@ -120,15 +74,6 @@ def create_task():
     )
 
     return jsonify({"task_id": task_id})
-
-
-# ================= CANCEL TASK =================
-
-@app.route("/cancel_task/<task_id>")
-def cancel_task(task_id):
-    cancel_flags[task_id] = True
-    update_task_status(task_id, "cancelled")
-    return jsonify({"status": "cancelled"})
 
 
 # ================= GET TASK =================
@@ -178,7 +123,7 @@ def stats():
     })
 
 
-# ================= PENDING TASKS =================
+# ================= WORKER INPUT =================
 
 @app.route("/pending_tasks")
 def pending_tasks():
@@ -192,11 +137,11 @@ def push_result():
 
     data = request.json
 
-    task_id = data["task_id"]
-    reel = data["reel"]
-    duration = data["duration"]
-
-    save_result(task_id, reel, duration)
+    save_result(
+        data["task_id"],
+        data["reel"],
+        data["duration"]
+    )
 
     return jsonify({"status": "ok"})
 
