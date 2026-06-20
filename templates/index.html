@@ -184,7 +184,7 @@ a{
 
 <br>
 
-<button onclick="startTask()">Start Scraping</button>
+<button id="startBtn">Start Scraping</button>
 
 <div class="status" id="taskStatus">
 No task running
@@ -198,7 +198,6 @@ No task running
 <h2>Results</h2>
 
 <table>
-
 <thead>
 <tr>
 <th>Duration</th>
@@ -207,7 +206,6 @@ No task running
 </thead>
 
 <tbody id="resultsTable"></tbody>
-
 </table>
 
 </div>
@@ -220,7 +218,6 @@ let currentTask = null;
 
 // ================= LOAD STATS =================
 async function loadStats(){
-
     try{
         let res = await fetch("/stats");
         let data = await res.json();
@@ -233,10 +230,6 @@ async function loadStats(){
         console.log("Stats error:", e);
     }
 }
-
-// load on page start
-loadStats();
-
 
 // ================= START TASK =================
 async function startTask(){
@@ -264,7 +257,6 @@ async function startTask(){
     pollTask();
 }
 
-window.startTask = startTask;
 // ================= POLL TASK =================
 async function pollTask(){
 
@@ -302,14 +294,12 @@ async function pollTask(){
     }
 }
 
-
 // ================= RESULTS =================
 function renderResults(results){
 
     let html = "";
 
     for(let reel of results){
-
         html += `
         <tr>
             <td>${reel[1]}</td>
@@ -323,3 +313,14 @@ function renderResults(results){
 
     document.getElementById("resultsTable").innerHTML = html;
 }
+
+// ================= INIT =================
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("startBtn").addEventListener("click", startTask);
+    loadStats();
+});
+
+</script>
+
+</body>
+</html>
