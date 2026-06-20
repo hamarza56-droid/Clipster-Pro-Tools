@@ -164,51 +164,37 @@ def login():
 
     data = request.json
 
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-    SELECT api_key FROM users
-    WHERE username=? AND password=?
-    """, (
-        data["username"],
-        hash_password(data["password"])
-    ))
-
-    user = cur.fetchone()
-    conn.close()
-
-    if user:
-        return jsonify({"api_key": user[0]})
-
-    return jsonify({"error": "invalid"})
-
-    data = request.json
-
     username = data.get("username")
     password = data.get("password")
 
     conn = get_connection()
     cur = conn.cursor()
 
-    hashed = hash_password(password)
-
     cur.execute("""
-        SELECT api_key FROM users
-        WHERE username=? AND password=?
-    """, (username, hashed))
+    SELECT api_key
+    FROM users
+    WHERE username=? AND password=?
+    """, (
+        username,
+        hash_password(password)
+    ))
 
     user = cur.fetchone()
+
     conn.close()
 
     if user:
+
         session["user"] = username
+
         return jsonify({
             "status": "success",
             "api_key": user[0]
         })
 
-    return jsonify({"status": "fail"})
+    return jsonify({
+        "status": "fail"
+    })
 
 # ================= REGISTER =================
 
