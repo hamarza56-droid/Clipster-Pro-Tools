@@ -8,18 +8,20 @@ from flask_socketio import SocketIO, emit
 app = Flask(__name__)
 app.secret_key = "clipster_secret_key_123"
 
+# WebSocket setup
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 init_db()
 
-# ================= ACTIVE TASK CONTROL =================
-active_tasks = set()
+# ================= TASK STATE =================
+active_tasks = {}
 cancel_flags = {}
 
-# ================= AUTH HELPERS =================
+# ================= AUTH =================
 
 def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
+
 
 def generate_api_key():
     return str(random.randint(100000, 999999)) + str(int(time.time()))
@@ -36,6 +38,7 @@ def home():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+
     if request.method == "GET":
         return render_template("login.html")
 
@@ -61,10 +64,12 @@ def login():
 
     return jsonify({"status": "fail"})
 
+
 # ================= REGISTER =================
 
 @app.route("/register", methods=["POST"])
 def register():
+
     data = request.json
     username = data.get("username")
     password = data.get("password")
@@ -88,12 +93,14 @@ def register():
 
     return jsonify({"status": "registered"})
 
+
 # ================= LOGOUT =================
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
+
 
 # ================= CREATE TASK =================
 
@@ -117,43 +124,76 @@ def create_task():
         time.strftime("%Y-%m-%d %H:%M:%S")
     )
 
-    active_tasks.add(task_id)
+    active_tasks[task_id] = True
+    cancel_flags[task_id] = False
 
     return jsonify({"task_id": task_id})
+
 
 # ================= CANCEL TASK =================
 
 @app.route("/cancel_task/<task_id>")
 def cancel_task(task_id):
+
     cancel_flags[task_id] = True
+    update_task_status(task_id, "cancelled")
+
+    socketio.emit("log", {
+        "task_id": task_id,
+        "msg": "❌ Task cancelled by user"
+    })
+
     return jsonify({"status": "cancelled"})
+
 
 # ================= GET TASK =================
 
 @app.route("/get_task/<task_id>")
 def get_task(task_id):
+
     task = get_task_info(task_id)
     results = get_task_results(task_id)
 
     if not task:
         return jsonify({"task": None, "results": []})
 
-    return jsonify({"task": task, "results": results})
+    return jsonify({
+        "task": task,
+        "results": results
+    })
 
-# ================= SOCKET =================
+
+# ================= SOCKET EVENTS =================
 
 @socketio.on("connect")
-def on_connect():
+def connect():
     emit("log", {"msg": "connected"})
 
-# ================= LIVE LOG EMITTER =================
 
-def log(task_id, message):
+# ================= LIVE LOG FUNCTION =================
+
+def send_log(task_id, msg):
+
+    print(f"[{task_id}] {msg}")
+
     socketio.emit("log", {
         "task_id": task_id,
-        "msg": message,
-        "time": time.time()
+        "msg": msg
     })
+
+
+# ================= PROGRESS UPDATE =================
+
+def update_progress_live(task_id, progress, page=""):
+
+    socketio.emit("progress", {
+        "task_id": task_id,
+        "progress": progress,
+        "page": page
+    })
+
+    update_progress(task_id, progress, page)
+
 
 # ================= STATS =================
 
@@ -184,11 +224,13 @@ def stats():
         "completed_tasks": done
     })
 
+
 # ================= PENDING TASKS =================
 
 @app.route("/pending_tasks")
 def pending_tasks():
     return jsonify(get_all_tasks())
+
 
 # ================= PUSH RESULT =================
 
@@ -205,7 +247,13 @@ def push_result():
 
     return jsonify({"status": "ok"})
 
-# ================= RUN =================
+
+# ================= RUN SERVER =================
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    socketio.run(
+        app,
+        host="0.0.0.0",
+        port=5000,
+        debug=True
+    )
