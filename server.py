@@ -14,6 +14,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 app = Flask(__name__)
 app.secret_key = "clipster_secret_key_123"
 
+init_db()
+
 
 # ================= AUTH HELPERS =================
 
