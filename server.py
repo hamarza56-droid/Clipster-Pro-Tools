@@ -3,17 +3,12 @@ from flask import Flask, request, jsonify, render_template, session, redirect
 import time
 import hashlib
 import random
-from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.secret_key = "clipster_secret_key_123"
 
-# WebSocket setup
-socketio = SocketIO(app, cors_allowed_origins="*")
-
 init_db()
 
-# ================= TASK STATE =================
 active_tasks = {}
 cancel_flags = {}
 
@@ -124,9 +119,6 @@ def create_task():
         time.strftime("%Y-%m-%d %H:%M:%S")
     )
 
-    active_tasks[task_id] = True
-    cancel_flags[task_id] = False
-
     return jsonify({"task_id": task_id})
 
 
@@ -134,15 +126,8 @@ def create_task():
 
 @app.route("/cancel_task/<task_id>")
 def cancel_task(task_id):
-
     cancel_flags[task_id] = True
     update_task_status(task_id, "cancelled")
-
-    socketio.emit("log", {
-        "task_id": task_id,
-        "msg": "❌ Task cancelled by user"
-    })
-
     return jsonify({"status": "cancelled"})
 
 
@@ -161,38 +146,6 @@ def get_task(task_id):
         "task": task,
         "results": results
     })
-
-
-# ================= SOCKET EVENTS =================
-
-@socketio.on("connect")
-def connect():
-    emit("log", {"msg": "connected"})
-
-
-# ================= LIVE LOG FUNCTION =================
-
-def send_log(task_id, msg):
-
-    print(f"[{task_id}] {msg}")
-
-    socketio.emit("log", {
-        "task_id": task_id,
-        "msg": msg
-    })
-
-
-# ================= PROGRESS UPDATE =================
-
-def update_progress_live(task_id, progress, page=""):
-
-    socketio.emit("progress", {
-        "task_id": task_id,
-        "progress": progress,
-        "page": page
-    })
-
-    update_progress(task_id, progress, page)
 
 
 # ================= STATS =================
@@ -248,12 +201,7 @@ def push_result():
     return jsonify({"status": "ok"})
 
 
-# ================= RUN SERVER =================
+# ================= RUN =================
 
 if __name__ == "__main__":
-    socketio.run(
-        app,
-        host="0.0.0.0",
-        port=5000,
-        debug=True
-    )
+    app.run(host="0.0.0.0", port=5000)
