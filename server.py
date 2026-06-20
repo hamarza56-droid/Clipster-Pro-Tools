@@ -119,22 +119,27 @@ def create_task():
         username,
         "running",
         str(data.get("pages", [])),
-        data.get("limit", 100),
+        data.get("limit", 10),
         time.strftime("%Y-%m-%d %H:%M:%S")
     )
 
-    return jsonify({
-        "task_id": task_id,
-        "status": "queued"
-    })
+    return jsonify({"task_id": task_id})
 
-# ================= TASK =================
+
+# ================= GET TASK (FIXED FORMAT) =================
 
 @app.route("/get_task/<task_id>")
 def get_task(task_id):
+
+    task = get_task_info(task_id)
+    results = get_task_results(task_id)
+
+    if not task:
+        return jsonify({"task": None, "results": []})
+
     return jsonify({
-        "task": get_task_info(task_id),
-        "results": get_task_results(task_id)
+        "task": task,
+        "results": results
     })
 
 
@@ -168,25 +173,15 @@ def stats():
     })
 
 
-# ================= TASK QUEUE API =================
+# ================= PENDING TASKS (FOR WORKER) =================
 
 @app.route("/pending_tasks")
 def pending_tasks():
     tasks = get_all_tasks()
+    return jsonify(tasks)
 
-    pending = []
 
-    for t in tasks:
-        pending.append({
-            "task_id": t[0],
-            "username": t[1],
-            "status": t[2],
-            "created_at": t[3]
-        })
-
-    return jsonify(pending)
-
-# ================= PUSH RESULT API =================
+# ================= PUSH RESULT =================
 
 @app.route("/push_result", methods=["POST"])
 def push_result():
@@ -202,7 +197,7 @@ def push_result():
     return jsonify({"status": "ok"})
 
 
-# ================= START =================
+# ================= RUN =================
 
 if __name__ == "__main__":
     init_db()
