@@ -3,22 +3,26 @@ from flask import Flask, request, jsonify, render_template, session, redirect
 import time
 import hashlib
 import random
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.secret_key = "clipster_secret_key_123"
 
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 init_db()
 
+# ================= ACTIVE TASK CONTROL =================
+active_tasks = set()
+cancel_flags = {}
 
 # ================= AUTH HELPERS =================
 
 def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
-
 def generate_api_key():
     return str(random.randint(100000, 999999)) + str(int(time.time()))
-
 
 # ================= HOME =================
 
@@ -28,12 +32,10 @@ def home():
         return redirect("/login")
     return render_template("index.html")
 
-
 # ================= LOGIN =================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-
     if request.method == "GET":
         return render_template("login.html")
 
@@ -55,19 +57,14 @@ def login():
 
     if user:
         session["user"] = username
-        return jsonify({
-            "status": "success",
-            "api_key": user[0]
-        })
+        return jsonify({"status": "success", "api_key": user[0]})
 
     return jsonify({"status": "fail"})
-
 
 # ================= REGISTER =================
 
 @app.route("/register", methods=["POST"])
 def register():
-
     data = request.json
     username = data.get("username")
     password = data.get("password")
@@ -79,19 +76,17 @@ def register():
     if cur.fetchone():
         return jsonify({"status": "error", "msg": "user exists"})
 
-    hashed = hash_password(password)
     api_key = generate_api_key()
 
     cur.execute("""
         INSERT INTO users(username, password, api_key)
         VALUES (?, ?, ?)
-    """, (username, hashed, api_key))
+    """, (username, hash_password(password), api_key))
 
     conn.commit()
     conn.close()
 
     return jsonify({"status": "registered"})
-
 
 # ================= LOGOUT =================
 
@@ -99,7 +94,6 @@ def register():
 def logout():
     session.clear()
     return redirect("/login")
-
 
 # ================= CREATE TASK =================
 
@@ -123,25 +117,43 @@ def create_task():
         time.strftime("%Y-%m-%d %H:%M:%S")
     )
 
+    active_tasks.add(task_id)
+
     return jsonify({"task_id": task_id})
 
+# ================= CANCEL TASK =================
 
-# ================= GET TASK (FIXED FORMAT) =================
+@app.route("/cancel_task/<task_id>")
+def cancel_task(task_id):
+    cancel_flags[task_id] = True
+    return jsonify({"status": "cancelled"})
+
+# ================= GET TASK =================
 
 @app.route("/get_task/<task_id>")
 def get_task(task_id):
-
     task = get_task_info(task_id)
     results = get_task_results(task_id)
 
     if not task:
         return jsonify({"task": None, "results": []})
 
-    return jsonify({
-        "task": task,
-        "results": results
-    })
+    return jsonify({"task": task, "results": results})
 
+# ================= SOCKET =================
+
+@socketio.on("connect")
+def on_connect():
+    emit("log", {"msg": "connected"})
+
+# ================= LIVE LOG EMITTER =================
+
+def log(task_id, message):
+    socketio.emit("log", {
+        "task_id": task_id,
+        "msg": message,
+        "time": time.time()
+    })
 
 # ================= STATS =================
 
@@ -172,14 +184,11 @@ def stats():
         "completed_tasks": done
     })
 
-
-# ================= PENDING TASKS (FOR WORKER) =================
+# ================= PENDING TASKS =================
 
 @app.route("/pending_tasks")
 def pending_tasks():
-    tasks = get_all_tasks()
-    return jsonify(tasks)
-
+    return jsonify(get_all_tasks())
 
 # ================= PUSH RESULT =================
 
@@ -196,9 +205,7 @@ def push_result():
 
     return jsonify({"status": "ok"})
 
-
 # ================= RUN =================
 
 if __name__ == "__main__":
-    init_db()
-    app.run(debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
