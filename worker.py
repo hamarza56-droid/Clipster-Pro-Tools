@@ -1,7 +1,7 @@
 import requests
 import time
+import ast
 
-# ⚠️ CHANGE THIS TO YOUR RENDER URL
 BASE_URL = "https://clipster-pro-tools.onrender.com"
 
 
@@ -25,6 +25,16 @@ def push_result(task_id, reel, duration):
         print("Push error:", e)
 
 
+def safe_parse_pages(pages):
+    if isinstance(pages, list):
+        return pages
+
+    try:
+        return ast.literal_eval(pages)
+    except:
+        return []
+
+
 def run():
     tasks = get_tasks()
 
@@ -33,28 +43,35 @@ def run():
         return
 
     for task in tasks:
-        task_id = task["task_id"]
+        task_id = task.get("task_id")
+        status = task.get("status")
 
-        pages = task["pages"]
+        print(f"\nProcessing task: {task_id} | status: {status}")
 
-        # if pages stored as string in DB
+        # ⚠️ IMPORTANT: we need full task data (not just pending list)
         try:
-            import ast
-            pages = ast.literal_eval(pages)
+            full_task = requests.get(f"{BASE_URL}/get_task/{task_id}").json()
+            task_data = full_task.get("task", [])
         except:
-            pages = []
+            task_data = []
 
-        limit = task.get("limit_count", 10)
+        if not task_data:
+            print("No task data found")
+            continue
 
-        print(f"Processing task: {task_id}")
+        # DB row format:
+        # (task_id, username, status, pages, limit_count, created_at)
+        pages = safe_parse_pages(task_data[3])
+        limit = task_data[4] if len(task_data) > 4 else 10
 
         count = 0
 
         for page in pages:
             for i in range(limit):
 
+                # ⚠️ placeholder logic (still no real selenium here)
                 reel_url = f"{page}/reel/{i}"
-                duration = 30 + (i % 10)
+                duration = 25 + (i % 20)
 
                 print("Sending:", reel_url, duration)
 
