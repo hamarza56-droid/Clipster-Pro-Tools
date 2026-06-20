@@ -1,7 +1,6 @@
 from database import *
 from flask import Flask, request, jsonify, render_template, session, redirect
 import time
-import threading
 import hashlib
 import random
 
@@ -115,17 +114,22 @@ def create_task():
 
     task_id = str(int(time.time()))
 
+    pages = data.get("pages", [])
+    limit = data.get("limit", 100)
+
     save_task(
         task_id,
         username,
         "running",
-        str(data.get("pages", [])),
-        data.get("limit", 100),
+        str(pages),   # stored as string for DB
+        limit,
         time.strftime("%Y-%m-%d %H:%M:%S")
     )
 
-    # IMPORTANT: NO SELENIUM THREAD ANYMORE
-    return jsonify({"task_id": task_id})
+    return jsonify({
+        "task_id": task_id,
+        "status": "queued"
+    })
 
 
 # ================= TASK =================
@@ -179,10 +183,12 @@ def pending_tasks():
 
     for t in tasks:
         pending.append({
-            "task_id": t[0],
-            "username": t[1],
-            "status": t[2],
-            "created_at": t[3]
+            "task_id": t["task_id"],
+            "username": t["username"],
+            "status": t["status"],
+            "pages": t.get("pages", ""),
+            "limit": t.get("limit", 100),
+            "created_at": t["created_at"]
         })
 
     return jsonify(pending)
