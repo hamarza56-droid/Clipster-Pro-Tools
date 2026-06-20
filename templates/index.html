@@ -273,14 +273,21 @@ async function pollTask(){
     let res = await fetch("/get_task/" + currentTask);
     let data = await res.json();
 
-    if(data.task.status === "running"){
+    if(!data.task){
+        setTimeout(pollTask, 3000);
+        return;
+    }
+
+    let status = data.task[2];
+
+    if(status === "running"){
 
         document.getElementById("taskStatus").innerHTML =
             '<span class="running">Scraping...</span>';
 
         setTimeout(pollTask, 3000);
 
-    } else if(data.task.status === "done"){
+    } else if(status === "done"){
 
         document.getElementById("taskStatus").innerHTML =
             '<span class="success">Completed</span>';
@@ -305,16 +312,14 @@ function renderResults(results){
 
         html += `
         <tr>
-            <td>${reel.duration}</td>
-            <td><a href="${reel.url}" target="_blank">${reel.url}</a></td>
+            <td>${reel[1]}</td>
+            <td>
+                <a href="${reel[0]}" target="_blank">
+                    ${reel[0]}
+                </a>
+            </td>
         </tr>`;
     }
 
     document.getElementById("resultsTable").innerHTML = html;
-    document.getElementById("totalReels").innerText = results.length;
 }
-
-</script>
-
-</body>
-</html>
