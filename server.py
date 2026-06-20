@@ -154,7 +154,7 @@ def home():
     return render_template("index.html")
 
 
-# ================= LOGIN PAGE =================
+# ================= LOGIN =================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -163,7 +163,6 @@ def login():
         return render_template("login.html")
 
     data = request.json
-
     username = data.get("username")
     password = data.get("password")
 
@@ -171,30 +170,23 @@ def login():
     cur = conn.cursor()
 
     cur.execute("""
-    SELECT api_key
-    FROM users
-    WHERE username=? AND password=?
-    """, (
-        username,
-        hash_password(password)
-    ))
+        SELECT api_key
+        FROM users
+        WHERE username=? AND password=?
+    """, (username, hash_password(password)))
 
     user = cur.fetchone()
-
     conn.close()
 
     if user:
-
         session["user"] = username
-
         return jsonify({
             "status": "success",
             "api_key": user[0]
         })
 
-    return jsonify({
-        "status": "fail"
-    })
+    return jsonify({"status": "fail"})
+
 
 # ================= REGISTER =================
 
@@ -209,13 +201,11 @@ def register():
     conn = get_connection()
     cur = conn.cursor()
 
-    # check if user exists
     cur.execute("SELECT username FROM users WHERE username=?", (username,))
     if cur.fetchone():
         return jsonify({"status": "error", "msg": "user exists"})
 
     hashed = hash_password(password)
-
     api_key = generate_api_key()
 
     cur.execute("""
@@ -306,6 +296,34 @@ def stats():
         "running_tasks": running,
         "completed_tasks": done
     })
+
+
+# ================= NEW: TASK QUEUE API =================
+
+@app.route("/pending_tasks")
+def pending_tasks():
+
+    tasks = get_all_tasks()
+
+    pending = [t for t in tasks if t["status"] == "running"]
+
+    return jsonify(pending)
+
+
+# ================= NEW: PUSH RESULT API =================
+
+@app.route("/push_result", methods=["POST"])
+def push_result():
+
+    data = request.json
+
+    task_id = data["task_id"]
+    reel = data["reel"]
+    duration = data["duration"]
+
+    save_result(task_id, reel, duration)
+
+    return jsonify({"status": "ok"})
 
 
 # ================= START =================
