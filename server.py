@@ -154,8 +154,32 @@ def home():
 
 # ================= LOGIN PAGE =================
 
-@app.route("/login", methods=["POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
+
+    if request.method == "GET":
+        return render_template("login.html")
+
+    data = request.json
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT api_key FROM users
+    WHERE username=? AND password=?
+    """, (
+        data["username"],
+        hash_password(data["password"])
+    ))
+
+    user = cur.fetchone()
+    conn.close()
+
+    if user:
+        return jsonify({"api_key": user[0]})
+
+    return jsonify({"error": "invalid"})
 
     data = request.json
 
