@@ -1,5 +1,5 @@
 import requests
-import tim
+import time
 
 # ⚠️ CHANGE THIS TO YOUR RENDER URL
 BASE_URL = "https://clipster-pro-tools.onrender.com"
