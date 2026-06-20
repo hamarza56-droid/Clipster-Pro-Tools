@@ -4,6 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 DB_NAME = "clipster.db"
 
 
+# ================= CONNECTION =================
+
 def get_connection():
     return sqlite3.connect(DB_NAME)
 
@@ -127,7 +129,7 @@ def update_task_status(task_id, status):
     conn.close()
 
 
-# ================= NEW: ALL TASKS =================
+# ================= FIXED: TASK LIST (IMPORTANT) =================
 
 def get_all_tasks():
 
@@ -135,11 +137,7 @@ def get_all_tasks():
     cur = conn.cursor()
 
     cur.execute("""
-    SELECT
-        task_id,
-        username,
-        status,
-        created_at
+    SELECT task_id, username, status, pages, limit_count, created_at
     FROM tasks
     ORDER BY created_at DESC
     """)
@@ -147,7 +145,18 @@ def get_all_tasks():
     rows = cur.fetchall()
     conn.close()
 
-    return rows
+    # ✅ FIX: convert tuples → dicts (this fixes your crash)
+    return [
+        {
+            "task_id": r[0],
+            "username": r[1],
+            "status": r[2],
+            "pages": r[3],
+            "limit": r[4],
+            "created_at": r[5]
+        }
+        for r in rows
+    ]
 
 
 def get_task_info(task_id):
@@ -193,7 +202,7 @@ def get_task_results(task_id):
     FROM results
     WHERE task_id=?
     ORDER BY duration DESC
-    """, (task_id,))
+    """)
 
     rows = cur.fetchall()
     conn.close()
