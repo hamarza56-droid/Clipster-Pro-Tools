@@ -1,11 +1,24 @@
-from database import *
 from flask import Flask, request, jsonify, render_template, session, redirect
-import time
+from flask_socketio import SocketIO
 import hashlib
+import time
 import random
+import redis
+import json
+
+from database import *
 
 app = Flask(__name__)
 app.secret_key = "clipster_secret_key_123"
+
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+rdb = redis.Redis(
+    host="YOUR_REDIS_HOST",
+    port=6379,
+    password="YOUR_REDIS_PASSWORD",
+    decode_responses=True
+)
 
 init_db()
 
@@ -35,10 +48,7 @@ def login():
     if request.method == "GET":
         return render_template("login.html")
 
-    data = request.json or {}
-
-    if "username" not in data or "password" not in data:
-        return jsonify({"status": "fail", "msg": "missing fields"})
+    data = request.json
 
     user = get_user(
         data["username"],
@@ -47,10 +57,7 @@ def login():
 
     if user:
         session["user"] = data["username"]
-        return jsonify({
-            "status": "success",
-            "api_key": user["api_key"]
-        })
+        return jsonify({"status": "success"})
 
     return jsonify({"status": "fail"})
 
@@ -68,28 +75,39 @@ def register():
             generate_api_key()
         )
         return jsonify({"status": "registered"})
-
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)})
 
 
-# ================= CREATE TASK =================
+# ================= CREATE TASK (REDIS QUEUE) =================
 
 @app.route("/create_task", methods=["POST"])
 def create_task():
+
     if "user" not in session:
         return jsonify({"error": "not logged in"})
 
     data = request.json
-
     task_id = str(int(time.time()))
+
+    task = {
+        "task_id": task_id,
+        "user": session["user"],
+        "pages": data.get("pages", []),
+        "limit": data.get("limit", 10),
+        "status": "queued",
+        "progress": 0
+    }
+
+    # save to redis queue
+    rdb.lpush("task_queue", json.dumps(task))
 
     save_task(
         task_id,
         session["user"],
-        "running",
-        str(data.get("pages", [])),
-        data.get("limit", 10),
+        "queued",
+        str(task["pages"]),
+        task["limit"],
         time.strftime("%Y-%m-%d %H:%M:%S")
     )
 
@@ -100,11 +118,12 @@ def create_task():
 
 @app.route("/get_task/<task_id>")
 def get_task(task_id):
+
     task = get_task_info(task_id)
     results = get_task_results(task_id)
 
     return jsonify({
-        "task": task,
+        "task": dict(task) if task else None,
         "results": results
     })
 
@@ -113,62 +132,37 @@ def get_task(task_id):
 
 @app.route("/cancel_task/<task_id>")
 def cancel(task_id):
+
     cancel_task(task_id)
+
+    # notify workers instantly
+    rdb.set(f"cancel:{task_id}", "1")
+
+    socketio.emit("status", {
+        "task_id": task_id,
+        "status": "cancelled"
+    })
+
     return jsonify({"status": "cancelled"})
 
 
-# ================= STATS =================
+# ================= WORKER EVENTS =================
 
-@app.route("/stats")
-def stats():
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("SELECT COUNT(*) FROM tasks")
-    total_tasks = cur.fetchone()[0]
-
-    cur.execute("SELECT COUNT(*) FROM results")
-    total_reels = cur.fetchone()[0]
-
-    cur.execute("SELECT COUNT(*) FROM tasks WHERE status='running'")
-    running = cur.fetchone()[0]
-
-    cur.execute("SELECT COUNT(*) FROM tasks WHERE status='done'")
-    done = cur.fetchone()[0]
-
-    conn.close()
-
-    return jsonify({
-        "total_tasks": total_tasks,
-        "total_reels": total_reels,
-        "running_tasks": running,
-        "completed_tasks": done
+def emit_log(task_id, msg):
+    socketio.emit("log", {
+        "task_id": task_id,
+        "msg": msg
     })
 
 
-# ================= WORKER =================
-
-@app.route("/pending_tasks")
-def pending_tasks():
-    return jsonify(get_all_tasks())
-
-
-# ================= PUSH RESULT =================
-
-@app.route("/push_result", methods=["POST"])
-def push_result():
-    data = request.json
-
-    save_result(
-        data["task_id"],
-        data["reel"],
-        data["duration"]
-    )
-
-    return jsonify({"status": "ok"})
+def emit_progress(task_id, progress):
+    socketio.emit("progress", {
+        "task_id": task_id,
+        "progress": progress
+    })
 
 
 # ================= RUN =================
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    socketio.run(app, host="0.0.0.0", port=5000)
