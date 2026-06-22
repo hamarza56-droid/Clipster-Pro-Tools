@@ -2,150 +2,222 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clipster SaaS System</title>
+<title>Clipster PRO | SaaS Tools Suite</title>
 
 <style>
 
-/* ================= BASE ================= */
+/* ================= GLOBAL ================= */
 body{
     margin:0;
-    font-family:Inter, Arial, sans-serif;
-    background:
-        radial-gradient(circle at top,#0f172a,#05070d),
-        linear-gradient(180deg,#0b1220,#05070d);
+    font-family:Inter, Arial;
+    background:#05070d;
     color:white;
+    overflow-x:hidden;
 }
 
-/* noise layer */
-body::before{
-    content:"";
+/* ANIMATED BACKGROUND */
+.bg{
     position:fixed;
-    inset:0;
-    background:url("https://www.transparenttextures.com/patterns/noise.png");
-    opacity:0.04;
-    pointer-events:none;
+    width:100%;
+    height:100%;
+    z-index:-1;
+    overflow:hidden;
 }
 
-/* ================= LAYOUT ================= */
-.app{
+.blob{
+    position:absolute;
+    width:400px;
+    height:400px;
+    background:radial-gradient(circle,#4ade80,transparent);
+    filter:blur(120px);
+    animation:float 8s infinite ease-in-out;
+    opacity:0.25;
+}
+
+.blob2{
+    top:40%;
+    left:60%;
+    background:radial-gradient(circle,#facc15,transparent);
+}
+
+@keyframes float{
+    0%{transform:translateY(0px) translateX(0px);}
+    50%{transform:translateY(-40px) translateX(30px);}
+    100%{transform:translateY(0px) translateX(0px);}
+}
+
+/* ================= NAV ================= */
+.nav{
     display:flex;
-    height:100vh;
-}
-
-/* ================= SIDEBAR ================= */
-.sidebar{
-    width:280px;
-    background:rgba(255,255,255,0.03);
-    backdrop-filter: blur(20px);
-    border-right:1px solid rgba(255,255,255,0.06);
-    padding:20px;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 40px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    backdrop-filter:blur(10px);
 }
 
 .logo{
-    font-size:18px;
     font-weight:bold;
     color:#4ade80;
-    margin-bottom:20px;
+    font-size:18px;
 }
 
-.system-title{
-    font-size:12px;
-    color:#888;
-    margin-bottom:20px;
-    line-height:1.4;
-}
-
-.nav a{
-    display:block;
-    padding:12px;
-    margin-bottom:8px;
-    border-radius:12px;
-    text-decoration:none;
+.nav button{
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.1);
     color:white;
-    border:1px solid rgba(255,255,255,0.08);
-    transition:0.25s;
+    padding:8px 14px;
+    border-radius:10px;
+    cursor:pointer;
 }
 
-.nav a:hover{
-    border-color:#4ade80;
-    transform:translateX(5px);
+/* ================= HERO ================= */
+.hero{
+    text-align:center;
+    padding:80px 20px 40px 20px;
 }
 
-/* ================= MAIN ================= */
-.main{
-    flex:1;
-    padding:25px;
-    overflow:auto;
+.hero h1{
+    font-size:52px;
+    margin-bottom:10px;
+    background:linear-gradient(90deg,#4ade80,#facc15);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
 }
 
-/* ================= HEADER ================= */
-.header{
-    margin-bottom:20px;
-}
-
-.header h1{
-    margin:0;
-}
-
-.header p{
+.hero p{
+    max-width:750px;
+    margin:auto;
     color:#aaa;
-    max-width:700px;
     line-height:1.6;
 }
 
-/* ================= SYSTEM CARDS ================= */
-.grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:15px;
+/* CTA */
+.cta{
+    margin-top:20px;
 }
 
+.cta button{
+    background:rgba(74,222,128,0.15);
+    border:1px solid rgba(74,222,128,0.4);
+    color:#4ade80;
+    padding:12px 18px;
+    border-radius:12px;
+    cursor:pointer;
+    margin:5px;
+}
+
+/* ================= SECTIONS ================= */
+.section{
+    width:90%;
+    max-width:1100px;
+    margin:auto;
+    margin-top:60px;
+}
+
+/* TOOL GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;
+}
+
+/* TOOL CARD */
 .card{
     background:rgba(255,255,255,0.05);
     border:1px solid rgba(255,255,255,0.08);
     border-radius:16px;
-    padding:18px;
-    backdrop-filter: blur(18px);
-    transition:0.25s;
+    padding:20px;
+    backdrop-filter:blur(12px);
+    transition:0.3s;
+    cursor:pointer;
 }
 
 .card:hover{
-    transform:translateY(-4px);
+    transform:translateY(-5px);
     border-color:rgba(74,222,128,0.3);
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
 }
 
-/* ================= TOOL LABEL ================= */
-.tool{
-    font-size:12px;
+.card h3{
     color:#4ade80;
-    margin-bottom:6px;
 }
 
-/* ================= WORKFLOW ================= */
-.flow{
-    margin-top:15px;
+/* RUN PANEL */
+.panel{
+    margin-top:20px;
+    padding:20px;
+    background:rgba(255,255,255,0.05);
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(12px);
+}
+
+textarea,input{
+    width:100%;
     padding:12px;
-    border-radius:12px;
-    background:rgba(0,0,0,0.25);
-    border:1px solid rgba(255,255,255,0.06);
-    font-size:13px;
-    color:#bbb;
+    background:rgba(0,0,0,0.4);
+    border:1px solid rgba(255,255,255,0.1);
+    color:white;
+    border-radius:10px;
 }
 
-/* ================= BUTTON ================= */
-button{
-    padding:10px 14px;
-    border-radius:12px;
-    background:rgba(74,222,128,0.12);
+button.run{
+    margin-top:10px;
+    background:rgba(74,222,128,0.15);
     border:1px solid rgba(74,222,128,0.4);
     color:#4ade80;
+    padding:10px 16px;
+    border-radius:10px;
     cursor:pointer;
-    transition:0.25s;
 }
 
-button:hover{
-    transform:scale(1.03);
-    box-shadow:0 0 20px rgba(74,222,128,0.15);
+/* LIVE STATUS */
+.statusbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:10px;
+    font-size:13px;
+    color:#aaa;
+}
+
+/* PROGRESS */
+.progress{
+    width:100%;
+    height:10px;
+    background:rgba(255,255,255,0.08);
+    border-radius:20px;
+    overflow:hidden;
+    margin-top:10px;
+}
+
+.fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#facc15,#4ade80);
+    transition:0.3s;
+}
+
+/* LOGS */
+.logs{
+    margin-top:15px;
+    height:220px;
+    overflow:auto;
+    background:rgba(0,0,0,0.4);
+    padding:10px;
+    font-family:monospace;
+    font-size:12px;
+    border-radius:10px;
+}
+
+/* FOOTER */
+footer{
+    text-align:center;
+    color:#555;
+    margin-top:80px;
+    padding:30px;
+    border-top:1px solid rgba(255,255,255,0.05);
 }
 
 </style>
@@ -153,97 +225,164 @@ button:hover{
 
 <body>
 
-<div class="app">
-
-<!-- SIDEBAR -->
-<div class="sidebar">
-
-<div class="logo">🚀 Clipster SaaS OS</div>
-
-<div class="system-title">
-A workflow automation system for scraping, processing,
-and submitting reels into Clipster campaigns.
+<!-- BACKGROUND -->
+<div class="bg">
+    <div class="blob"></div>
+    <div class="blob blob2"></div>
 </div>
 
+<!-- NAV -->
 <div class="nav">
-<a href="#">🏠 System Home</a>
-<a href="#">🕷 Scraper Engine</a>
-<a href="#">🎯 Campaign Rules</a>
-<a href="#">🎬 Reel Processor</a>
-<a href="#">👥 Team Hub</a>
-<a href="#">📤 Submissions</a>
+    <div class="logo">🚀 Clipster PRO</div>
+    <button onclick="scrollToTools()">Explore Tools</button>
 </div>
 
+<!-- HERO -->
+<div class="hero">
+    <h1>Automate Your Clipster Workflow</h1>
+    <p>
+        A SaaS tool suite for Instagram scraping, reel processing,
+        campaign automation, and team management for Clipster.gg workflows.
+    </p>
+
+    <div class="cta">
+        <button onclick="scrollToTools()">Start Using Tools</button>
+        <button>View Documentation</button>
+    </div>
 </div>
 
-<!-- MAIN -->
-<div class="main">
+<!-- TOOLS -->
+<div class="section" id="tools">
 
-<div class="header">
-<h1>System Overview</h1>
-<p>
-Clipster SaaS is a workflow automation platform that connects scraping,
-content filtering, reel processing and campaign submission into a single system.
-</p>
-</div>
+<h2>Tool Suite</h2>
 
-<!-- SYSTEM CARDS -->
 <div class="grid">
 
-<div class="card">
-<div class="tool">🕷 SCRAPER ENGINE</div>
-<div>Extract Instagram reels from target pages</div>
-
-<div class="flow">
-Step 1 → Input pages<br>
-Step 2 → System fetches reels<br>
-Step 3 → Filters by duration & rules<br>
-Step 4 → Sends results to pipeline
-</div>
-
-<button>Open Scraper</button>
+<div class="card" onclick="selectTool('scraper')">
+<h3>Instagram Scraper</h3>
+<p>Extract reels from pages with filters and automation.</p>
 </div>
 
 <div class="card">
-<div class="tool">🎯 CAMPAIGN SYSTEM</div>
-<div>Define rules for each client campaign</div>
-
-<div class="flow">
-• CS2Skin → logo filter ON<br>
-• Hellcase → gameplay only<br>
-• Tradeit → short reels priority
-</div>
-
-<button>Open Campaigns</button>
+<h3>Reel Editor (Coming)</h3>
+<p>Crop gameplay, add overlays, and change backgrounds.</p>
 </div>
 
 <div class="card">
-<div class="tool">🎬 REEL PROCESSOR</div>
-<div>Auto crop + background + branding system</div>
-
-<div class="flow">
-Input reel → detect gameplay → crop → add logo → export
-</div>
-
-<button>Open Processor</button>
+<h3>Campaign Manager</h3>
+<p>Auto-match reels with campaign requirements.</p>
 </div>
 
 <div class="card">
-<div class="tool">👥 TEAM SYSTEM</div>
-<div>Track team performance and submissions</div>
-
-<div class="flow">
-Members → tasks → earnings → campaign output tracking
-</div>
-
-<button>Open Team Hub</button>
+<h3>Team Hub</h3>
+<p>Track teammates, earnings, submissions and activity.</p>
 </div>
 
 </div>
 
 </div>
 
+<!-- RUN PANEL -->
+<div class="section">
+
+<h2>Workspace</h2>
+
+<div class="panel">
+
+<h3 id="toolTitle">Select a Tool</h3>
+
+<textarea id="pages" placeholder="Enter Instagram pages (one per line)"></textarea>
+<br><br>
+
+<input id="limit" value="10">
+
+<button class="run" onclick="startTask()">Run Tool</button>
+
+<div class="statusbar">
+<span id="status">Idle</span>
+<span id="taskid"></span>
 </div>
+
+<div class="progress">
+<div class="fill" id="progress"></div>
+</div>
+
+<div class="logs" id="logs"></div>
+
+</div>
+
+</div>
+
+<footer>
+Clipster PRO SaaS Suite • Built for automation of Clipster.gg workflows
+</footer>
+
+<script>
+
+let currentTask=null;
+
+function scrollToTools(){
+document.getElementById("tools").scrollIntoView({behavior:"smooth"});
+}
+
+function selectTool(name){
+document.getElementById("toolTitle").innerText="Active Tool: "+name;
+}
+
+async function startTask(){
+
+document.getElementById("logs").innerHTML="";
+document.getElementById("progress").style.width="0%";
+document.getElementById("status").innerText="Running...";
+
+let pages=document.getElementById("pages").value.split("\n").filter(x=>x.trim());
+let limit=parseInt(document.getElementById("limit").value);
+
+let res=await fetch("/create_task",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({pages,limit})
+});
+
+let data=await res.json();
+currentTask=data.task_id;
+
+log("Task started: "+currentTask);
+
+poll();
+}
+
+async function poll(){
+
+if(!currentTask)return;
+
+let res=await fetch("/get_task/"+currentTask);
+let data=await res.json();
+
+if(data.task){
+document.getElementById("progress").style.width=(data.task.progress||0)+"%";
+}
+
+if(data.results){
+log("Results updated: "+data.results.length);
+}
+
+if(data.task && data.task.status==="running"){
+setTimeout(poll,2000);
+}else{
+document.getElementById("status").innerText="Done";
+}
+}
+
+function log(m){
+let box=document.getElementById("logs");
+let d=document.createElement("div");
+d.innerText=m;
+box.appendChild(d);
+box.scrollTop=box.scrollHeight;
+}
+
+</script>
 
 </body>
 </html>
