@@ -10,10 +10,14 @@ app.secret_key = "clipster_secret_key_123"
 init_db()
 
 
-# ================= AUTH =================
+# ================= HELPERS =================
 
 def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
+
+
+def generate_api_key():
+    return str(random.randint(100000, 999999)) + str(int(time.time()))
 
 
 # ================= HOME =================
@@ -34,30 +38,45 @@ def login():
 
     data = request.json
 
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT api_key
-        FROM users
-        WHERE username=? AND password=?
-    """, (data["username"], hash_password(data["password"])))
-
-    user = cur.fetchone()
-    conn.close()
+    user = get_user(
+        data["username"],
+        hash_password(data["password"])
+    )
 
     if user:
         session["user"] = data["username"]
-        return jsonify({"status": "success"})
+        return jsonify({
+            "status": "success",
+            "api_key": user["api_key"]
+        })
 
     return jsonify({"status": "fail"})
+
+
+# ================= REGISTER =================
+
+@app.route("/register", methods=["POST"])
+def register():
+    data = request.json
+
+    api_key = generate_api_key()
+
+    try:
+        create_user(
+            data["username"],
+            hash_password(data["password"]),
+            api_key
+        )
+        return jsonify({"status": "registered"})
+
+    except Exception as e:
+        return jsonify({"status": "error", "msg": str(e)})
 
 
 # ================= CREATE TASK =================
 
 @app.route("/create_task", methods=["POST"])
 def create_task():
-
     if "user" not in session:
         return jsonify({"error": "not logged in"})
 
@@ -80,12 +99,8 @@ def create_task():
 
 @app.route("/get_task/<task_id>")
 def get_task(task_id):
-
     task = get_task_info(task_id)
     results = get_task_results(task_id)
-
-    if not task:
-        return jsonify({"task": None, "results": []})
 
     return jsonify({
         "task": task,
@@ -93,11 +108,18 @@ def get_task(task_id):
     })
 
 
+# ================= CANCEL TASK =================
+
+@app.route("/cancel_task/<task_id>")
+def cancel(task_id):
+    cancel_task(task_id)
+    return jsonify({"status": "cancelled"})
+
+
 # ================= STATS =================
 
 @app.route("/stats")
 def stats():
-
     conn = get_connection()
     cur = conn.cursor()
 
@@ -123,7 +145,7 @@ def stats():
     })
 
 
-# ================= WORKER INPUT =================
+# ================= WORKER ENDPOINT =================
 
 @app.route("/pending_tasks")
 def pending_tasks():
@@ -134,7 +156,6 @@ def pending_tasks():
 
 @app.route("/push_result", methods=["POST"])
 def push_result():
-
     data = request.json
 
     save_result(
