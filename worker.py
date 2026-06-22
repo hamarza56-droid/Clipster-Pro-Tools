@@ -6,113 +6,79 @@ import ast
 BASE_URL = os.getenv("BASE_URL", "https://clipster-pro-tools.onrender.com")
 
 
-# ================= FETCH TASKS =================
-
 def get_tasks():
     try:
-        r = requests.get(BASE_URL + "/pending_tasks", timeout=30)
-        return r.json()
-    except Exception as e:
-        print("Task fetch error:", e)
+        return requests.get(BASE_URL + "/pending_tasks", timeout=30).json()
+    except:
         return []
 
 
-# ================= PUSH RESULT =================
-
 def push_result(task_id, reel, duration):
-    try:
-        requests.post(BASE_URL + "/push_result", json={
-            "task_id": task_id,
-            "reel": reel,
-            "duration": duration
-        }, timeout=30)
-    except Exception as e:
-        print("Push error:", e)
+    requests.post(BASE_URL + "/push_result", json={
+        "task_id": task_id,
+        "reel": reel,
+        "duration": duration
+    })
 
-
-# ================= CHECK TASK STATUS =================
 
 def get_task(task_id):
     try:
-        r = requests.get(f"{BASE_URL}/get_task/{task_id}", timeout=30)
-        return r.json()
+        return requests.get(f"{BASE_URL}/get_task/{task_id}", timeout=30).json()
     except:
         return None
 
 
-# ================= SIMULATED SCRAPER =================
+def is_cancelled(task_id):
+    task = get_task(task_id)
+    if not task:
+        return True
+    return task["task"].get("cancelled", 0) == 1
 
-def scrape_page(task_id, page, limit):
-
-    for i in range(limit):
-
-        # ---- CHECK CANCEL EVERY STEP ----
-        task = get_task(task_id)
-
-        if not task or task["task"]["cancelled"]:
-            print("Task cancelled:", task_id)
-            return
-
-        reel = f"{page}/reel/{i}"
-        duration = 30 + i
-
-        print(f"[{task_id}] Processing reel:", reel)
-
-        # simulate processing time
-        time.sleep(1)
-
-        if 28 <= duration <= 41:
-            push_result(task_id, reel, duration)
-            print("MATCH:", reel)
-
-
-# ================= MAIN RUNNER =================
 
 def run():
 
     tasks = get_tasks()
 
     if not tasks:
-        print("No tasks found")
+        print("No tasks")
         return
-
-    print(f"Found {len(tasks)} tasks")
 
     for task in tasks:
 
         task_id = task["task_id"]
 
-        print("\n==========================")
-        print("Processing task:", task_id)
-        print("==========================")
+        print("\nProcessing:", task_id)
 
         full = get_task(task_id)
-
-        if not full or not full.get("task"):
-            continue
-
         task_data = full["task"]
 
-        try:
-            pages = ast.literal_eval(task_data["pages"])
-        except:
-            pages = []
-
+        pages = ast.literal_eval(task_data["pages"])
         limit = task_data["limit_count"]
 
         total_pages = len(pages)
-        done_pages = 0
 
-        for page in pages:
+        for idx, page in enumerate(pages):
 
-            scrape_page(task_id, page, limit)
+            if is_cancelled(task_id):
+                print("TASK CANCELLED:", task_id)
+                return
 
-            done_pages += 1
+            print(f"[{task_id}] Page {idx+1}/{total_pages}")
 
-            # optional progress update (DB-based later via server upgrades)
-            progress = int((done_pages / total_pages) * 100)
+            for i in range(limit):
 
-            print(f"[{task_id}] Progress:", progress, "%")
+                if is_cancelled(task_id):
+                    print("TASK CANCELLED:", task_id)
+                    return
+
+                reel = f"{page}/reel/{i}"
+                duration = 30 + i
+
+                time.sleep(0.8)
+
+                if 28 <= duration <= 41:
+                    push_result(task_id, reel, duration)
+                    print("MATCH:", reel)
 
     print("Worker finished")
 
