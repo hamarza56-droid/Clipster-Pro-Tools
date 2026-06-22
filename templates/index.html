@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <title>Clipster PRO Dashboard</title>
 
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-
 <style>
 
 body{
@@ -168,34 +166,7 @@ td,th{
 
 <script>
 
-let socket = io();
 let currentTask = null;
-
-// ================= SOCKET EVENTS =================
-
-socket.on("log", (data) => {
-
-    if(!currentTask || data.task_id === currentTask){
-
-        let box = document.getElementById("logs");
-
-        let div = document.createElement("div");
-        div.className = "log-line";
-        div.innerText = data.msg;
-
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
-    }
-});
-
-socket.on("progress", (data) => {
-
-    if(data.task_id !== currentTask) return;
-
-    document.getElementById("progress").style.width =
-        data.progress + "%";
-});
-
 
 // ================= START TASK =================
 
@@ -221,6 +192,56 @@ async function startTask(){
     currentTask = data.task_id;
 
     log("🚀 Task started: " + currentTask);
+
+    pollTask();   // START LIVE TRACKING
+}
+
+
+// ================= POLLING (REPLACED SOCKET.IO) =================
+
+async function pollTask(){
+
+    if(!currentTask) return;
+
+    try{
+
+        let res = await fetch("/get_task/" + currentTask);
+        let data = await res.json();
+
+        if(!data.task){
+            setTimeout(pollTask, 2000);
+            return;
+        }
+
+        let task = data.task;
+
+        // progress
+        document.getElementById("progress").style.width =
+            (task.progress || 0) + "%";
+
+        // logs
+        if(task.logs){
+            log(task.logs);
+        }
+
+        // status
+        if(task.status === "running"){
+            setTimeout(pollTask, 2000);
+        }
+
+        else if(task.status === "done"){
+            log("✅ Task Completed");
+            renderResults(data.results);
+        }
+
+        else if(task.status === "cancelled"){
+            log("❌ Task Cancelled");
+        }
+
+    } catch(e){
+        console.log("poll error", e);
+        setTimeout(pollTask, 3000);
+    }
 }
 
 
@@ -236,7 +257,7 @@ async function cancelTask(){
 }
 
 
-// ================= LOG HELPER =================
+// ================= LOGS =================
 
 function log(msg){
 
@@ -251,7 +272,7 @@ function log(msg){
 }
 
 
-// ================= RENDER RESULTS =================
+// ================= RESULTS =================
 
 function renderResults(data){
 
@@ -262,7 +283,11 @@ function renderResults(data){
         html += `
         <tr>
             <td>${r.duration}</td>
-            <td><a href="${r.url}" target="_blank">${r.url}</a></td>
+            <td>
+                <a href="${r.reel_url}" target="_blank">
+                    ${r.reel_url}
+                </a>
+            </td>
         </tr>`;
     }
 
