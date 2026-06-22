@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template, session, redirect
 import hashlib
 import time
 import random
+import threading
 
 from database import *
 
@@ -65,6 +66,42 @@ def register():
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)})
 
+# ================= TASK QUEUE =================
+
+TASKS = {}
+
+def process_task(task_id, pages, limit, username):
+
+    update_task_status(task_id, "running")
+
+    total = len(pages)
+    done = 0
+
+    for page in pages:
+
+        # ❌ CHECK CANCEL PROPERLY
+        task = get_task_info(task_id)
+        if task and task["cancelled"]:
+            update_task_status(task_id, "cancelled")
+            return
+
+        for i in range(limit):
+
+            reel = f"{page}/reel/{i}"
+            duration = 30 + i
+
+            if 28 <= duration <= 41:
+                save_result(task_id, reel, duration)
+
+            time.sleep(0.3)
+
+        done += 1
+        progress = int((done / total) * 100)
+
+        update_progress(task_id, progress, done, f"Processed {page}")
+
+    update_task_status(task_id, "done")
+
 # ================= CREATE TASK =================
 
 @app.route("/create_task", methods=["POST"])
@@ -76,14 +113,24 @@ def create_task():
     data = request.json
     task_id = str(int(time.time()))
 
+    pages = data.get("pages", [])
+    limit = data.get("limit", 10)
+
     save_task(
         task_id,
         session["user"],
         "queued",
-        str(data.get("pages", [])),
-        data.get("limit", 10),
+        str(pages),
+        limit,
         time.strftime("%Y-%m-%d %H:%M:%S")
     )
+
+    # 🔥 START BACKGROUND THREAD (FIXES UI FREEZE + AUTO CANCEL BUG)
+    t = threading.Thread(
+        target=process_task,
+        args=(task_id, pages, limit, session["user"])
+    )
+    t.start()
 
     return jsonify({"task_id": task_id})
 
@@ -91,6 +138,7 @@ def create_task():
 
 @app.route("/get_task/<task_id>")
 def get_task(task_id):
+
     task = get_task_info(task_id)
     results = get_task_results(task_id)
 
@@ -103,10 +151,11 @@ def get_task(task_id):
 
 @app.route("/cancel_task/<task_id>")
 def cancel(task_id):
+
     cancel_task(task_id)
     return jsonify({"status": "cancelled"})
 
-# ================= WORKER =================
+# ================= WORKER FEED =================
 
 @app.route("/pending_tasks")
 def pending_tasks():
