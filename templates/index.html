@@ -2,130 +2,194 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clipster SaaS Control Center</title>
+<title>Clipster SaaS Control System</title>
 
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
 <style>
 
-/* ========== BASE ========== */
+/* ================= ROOT ================= */
 body{
     margin:0;
-    font-family:Arial;
-    background: radial-gradient(circle at top,#0f172a,#05070d);
+    font-family:Inter, Arial, sans-serif;
+    background:
+        radial-gradient(circle at top,#0f172a,#05070d),
+        linear-gradient(180deg, rgba(74,222,128,0.05), transparent);
     color:white;
-    display:flex;
+    overflow:hidden;
 }
 
-/* ========== SIDEBAR ========== */
-.sidebar{
-    width:240px;
+/* subtle noise overlay */
+body::before{
+    content:"";
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    background-image:url("https://www.transparenttextures.com/patterns/noise.png");
+    opacity:0.05;
+    pointer-events:none;
+}
+
+/* ================= LAYOUT ================= */
+.app{
+    display:flex;
     height:100vh;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar{
+    width:260px;
     background:rgba(255,255,255,0.03);
+    backdrop-filter: blur(18px);
     border-right:1px solid rgba(255,255,255,0.06);
-    backdrop-filter: blur(15px);
     padding:20px;
 }
 
 .logo{
-    color:#4ade80;
-    font-weight:bold;
-    margin-bottom:30px;
     font-size:18px;
-}
-
-.nav{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
+    font-weight:bold;
+    color:#4ade80;
+    margin-bottom:25px;
 }
 
 .nav button{
+    width:100%;
+    text-align:left;
+    padding:12px;
+    margin-bottom:8px;
+    border-radius:12px;
     background:transparent;
     border:1px solid rgba(255,255,255,0.08);
     color:white;
-    padding:10px;
-    border-radius:10px;
     cursor:pointer;
-    text-align:left;
+    transition:0.25s;
 }
 
 .nav button:hover{
     border-color:#4ade80;
+    transform:translateX(4px);
 }
 
-/* ========== MAIN ========== */
+/* ================= MAIN ================= */
 .main{
     flex:1;
-    padding:25px;
+    display:flex;
+    flex-direction:column;
 }
 
-/* ========== HEADER ========== */
-.header{
+/* ================= TOPBAR ================= */
+.topbar{
+    height:60px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:20px;
-}
-
-/* ========== MODULES ========== */
-.module{
-    display:none;
-}
-
-.active{
-    display:block;
-}
-
-/* ========== CARD ========== */
-.card{
-    background: rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.08);
-    border-radius:16px;
-    padding:20px;
-    margin-bottom:20px;
+    padding:0 20px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
     backdrop-filter: blur(15px);
 }
 
-/* ========== INPUT ========== */
+.command{
+    width:50%;
+}
+
+.command input{
+    width:100%;
+    padding:10px 14px;
+    border-radius:12px;
+    background:rgba(0,0,0,0.3);
+    border:1px solid rgba(255,255,255,0.08);
+    color:white;
+}
+
+/* ================= WORKSPACE ================= */
+.workspace{
+    flex:1;
+    padding:20px;
+    overflow:auto;
+}
+
+/* ================= GLASS CARD (PREMIUM) ================= */
+.card{
+    background:
+        linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:22px;
+    margin-bottom:18px;
+    backdrop-filter: blur(18px);
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    transition:0.25s;
+}
+
+.card:hover{
+    transform:translateY(-2px);
+    border-color:rgba(74,222,128,0.3);
+}
+
+/* ================= INPUTS ================= */
 textarea,input{
     width:100%;
-    background:rgba(0,0,0,0.3);
-    border:1px solid rgba(255,255,255,0.1);
-    color:white;
     padding:12px;
-    border-radius:10px;
+    border-radius:12px;
+    background:rgba(0,0,0,0.35);
+    border:1px solid rgba(255,255,255,0.08);
+    color:white;
+    outline:none;
 }
 
-/* ========== BUTTON ========== */
+/* ================= BUTTON ================= */
 button{
-    background: rgba(74,222,128,0.15);
-    border:1px solid rgba(74,222,128,0.4);
-    color:#4ade80;
     padding:10px 14px;
-    border-radius:10px;
+    border-radius:12px;
     cursor:pointer;
+    border:1px solid rgba(74,222,128,0.4);
+    background:rgba(74,222,128,0.12);
+    color:#4ade80;
+    transition:0.25s;
 }
 
-button:disabled{
-    opacity:0.4;
+button:hover{
+    background:rgba(74,222,128,0.25);
+    box-shadow:0 0 20px rgba(74,222,128,0.15);
+    transform:translateY(-1px);
 }
 
-/* ========== STATUS ========== */
-.badge{
-    padding:6px 12px;
-    border-radius:20px;
+/* ================= STATUS ================= */
+.status{
+    padding:6px 14px;
+    border-radius:999px;
+    font-size:12px;
+    border:1px solid rgba(255,255,255,0.1);
 }
 
-.running{background:#facc15;color:black;}
-.done{background:#4ade80;}
-.cancelled{background:#ef4444;}
+.running{
+    background:rgba(250,204,21,0.12);
+    color:#facc15;
+    animation:pulse 1.5s infinite;
+}
 
-/* ========== PROGRESS ========== */
+.done{
+    background:rgba(74,222,128,0.12);
+    color:#4ade80;
+}
+
+.cancelled{
+    background:rgba(239,68,68,0.12);
+    color:#ef4444;
+}
+
+@keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(250,204,21,0.3);}
+    70%{box-shadow:0 0 0 12px rgba(250,204,21,0);}
+    100%{box-shadow:0 0 0 0 rgba(250,204,21,0);}
+}
+
+/* ================= PROGRESS ================= */
 .progress{
     height:12px;
-    background:rgba(255,255,255,0.08);
-    border-radius:20px;
+    background:rgba(255,255,255,0.06);
+    border-radius:999px;
     overflow:hidden;
     margin-top:15px;
 }
@@ -134,14 +198,29 @@ button:disabled{
     height:100%;
     width:0%;
     background:linear-gradient(90deg,#facc15,#4ade80);
+    transition:0.4s cubic-bezier(.4,0,.2,1);
 }
 
+/* ================= LOGS ================= */
 .log-box{
-    height:240px;
+    height:260px;
     overflow:auto;
-    background:rgba(0,0,0,0.3);
-    padding:10px;
+    background:rgba(0,0,0,0.35);
+    padding:12px;
+    border-radius:14px;
     font-family:monospace;
+    font-size:12px;
+}
+
+/* smooth log appearance */
+.log-line{
+    opacity:0;
+    transform:translateY(4px);
+    animation:fadeIn 0.2s forwards;
+}
+
+@keyframes fadeIn{
+    to{opacity:1;transform:translateY(0);}
 }
 
 </style>
@@ -149,15 +228,17 @@ button:disabled{
 
 <body>
 
+<div class="app">
+
 <!-- SIDEBAR -->
 <div class="sidebar">
     <div class="logo">🚀 Clipster SaaS</div>
 
     <div class="nav">
         <button onclick="show('scraper')">🕷 Scraper</button>
-        <button onclick="show('editor')">🎬 Reel Editor</button>
         <button onclick="show('campaigns')">🏷 Campaigns</button>
-        <button onclick="show('team')">👥 Team</button>
+        <button onclick="show('editor')">🎬 Reel Editor</button>
+        <button onclick="show('team')">👥 Team Hub</button>
         <button onclick="show('history')">📜 History</button>
     </div>
 </div>
@@ -165,14 +246,20 @@ button:disabled{
 <!-- MAIN -->
 <div class="main">
 
-<!-- HEADER -->
-<div class="header">
-    <div id="status" class="badge done">Idle</div>
-    <button onclick="cancelTask()">Cancel</button>
+<!-- TOPBAR -->
+<div class="topbar">
+    <div class="command">
+        <input placeholder="Search tools, tasks, campaigns... (UI only)">
+    </div>
+
+    <span id="status" class="status done">Idle</span>
 </div>
 
-<!-- ========== SCRAPER ========== -->
-<div id="scraper" class="module active">
+<!-- WORKSPACE -->
+<div class="workspace">
+
+<!-- SCRAPER -->
+<div id="scraper" class="module">
 
 <div class="card">
 <h3>Scraper Engine</h3>
@@ -184,7 +271,7 @@ button:disabled{
 
 <br><br>
 
-<button id="startBtn" onclick="startTask()">Start Scraping</button>
+<button onclick="startTask()" id="startBtn">Start Scraping</button>
 
 <div class="progress">
     <div class="fill" id="progress"></div>
@@ -192,42 +279,18 @@ button:disabled{
 </div>
 
 <div class="card">
-<h3>Live Logs</h3>
+<h3>Live Activity</h3>
 <div class="log-box" id="logs"></div>
 </div>
 
 </div>
 
-<!-- ========== EDITOR (UI ONLY) ========== -->
-<div id="editor" class="module">
-<div class="card">
-<h3>Reel Editor (UI Mock)</h3>
-<p>Upload reel → crop → background change → logo overlay</p>
-</div>
-</div>
+<!-- PLACEHOLDERS -->
+<div id="campaigns" class="module"><div class="card">Campaign System UI</div></div>
+<div id="editor" class="module"><div class="card">Reel Editor UI</div></div>
+<div id="team" class="module"><div class="card">Team Hub UI</div></div>
+<div id="history" class="module"><div class="card">History UI</div></div>
 
-<!-- ========== CAMPAIGNS ========== -->
-<div id="campaigns" class="module">
-<div class="card">
-<h3>Campaign Manager</h3>
-<p>Define rules, logos, filters (UI only for now)</p>
-</div>
-</div>
-
-<!-- ========== TEAM ========== -->
-<div id="team" class="module">
-<div class="card">
-<h3>Team Dashboard</h3>
-<p>Members, earnings, submissions (UI placeholder)</p>
-</div>
-</div>
-
-<!-- ========== HISTORY ========== -->
-<div id="history" class="module">
-<div class="card">
-<h3>History</h3>
-<p>Task history UI placeholder</p>
-</div>
 </div>
 
 </div>
@@ -236,37 +299,37 @@ button:disabled{
 
 let currentTask = null;
 
-/* ========== NAV ========== */
+/* NAV */
 function show(id){
     document.querySelectorAll('.module')
-    .forEach(m => m.classList.remove('active'));
+    .forEach(m=>m.style.display="none");
 
-    document.getElementById(id).classList.add('active');
+    document.getElementById(id).style.display="block";
 }
 
-/* ========== UI STATE ========== */
-function setRunning(){
-    document.getElementById("status").innerText = "Running...";
-    document.getElementById("status").className = "badge running";
-    document.getElementById("startBtn").disabled = true;
+/* INIT */
+show('scraper');
+
+/* STATUS */
+function setStatus(type){
+    let el = document.getElementById("status");
+    el.className = "status " + type;
+
+    if(type==="running") el.innerText="Running";
+    if(type==="done") el.innerText="Done";
+    if(type==="cancelled") el.innerText="Cancelled";
 }
 
-function setIdle(){
-    document.getElementById("status").innerText = "Idle";
-    document.getElementById("status").className = "badge done";
-    document.getElementById("startBtn").disabled = false;
-}
-
-/* ========== START TASK ========== */
+/* START */
 async function startTask(){
 
     document.getElementById("logs").innerHTML = "";
     document.getElementById("progress").style.width = "0%";
 
-    setRunning();
+    setStatus("running");
 
     let pages = document.getElementById("pages").value
-        .split("\n").filter(x => x.trim());
+        .split("\n").filter(x=>x.trim());
 
     let limit = parseInt(document.getElementById("limit").value);
 
@@ -277,60 +340,50 @@ async function startTask(){
     });
 
     let data = await res.json();
+
     currentTask = data.task_id;
 
-    log("Task started: " + currentTask);
+    addLog("Task started: " + currentTask);
 
     poll();
 }
 
-/* ========== POLLING ========== */
+/* POLL */
 async function poll(){
 
     if(!currentTask) return;
 
-    let res = await fetch("/get_task/" + currentTask);
+    let res = await fetch("/get_task/"+currentTask);
     let data = await res.json();
 
-    if(!data.task){
-        setTimeout(poll,1500);
-        return;
-    }
+    if(!data.task) return setTimeout(poll,1500);
 
     let t = data.task;
 
     document.getElementById("progress").style.width =
-        (t.progress || 0) + "%";
+        (t.progress||0)+"%";
 
-    if(t.logs) log(t.logs);
+    if(t.logs) addLog(t.logs);
 
-    if(t.status === "running"){
-        setTimeout(poll,1500);
+    if(t.status==="running") setTimeout(poll,1500);
+
+    if(t.status==="done"){
+        addLog("Completed");
+        setStatus("done");
     }
 
-    else if(t.status === "done"){
-        log("Completed");
-        setIdle();
-    }
-
-    else if(t.status === "cancelled"){
-        log("Cancelled");
-        setIdle();
+    if(t.status==="cancelled"){
+        addLog("Cancelled");
+        setStatus("cancelled");
     }
 }
 
-/* ========== CANCEL ========== */
-async function cancelTask(){
-    if(!currentTask) return;
-    await fetch("/cancel_task/" + currentTask);
-    log("Cancel requested");
-}
-
-/* ========== LOG ========== */
-function log(msg){
-    let box = document.getElementById("logs");
-    let d = document.createElement("div");
-    d.innerText = msg;
+/* LOG */
+function addLog(msg){
+    let box=document.getElementById("logs");
+    let d=document.createElement("div");
+    d.className="log-line";
+    d.innerText=msg;
     box.appendChild(d);
 }
 
