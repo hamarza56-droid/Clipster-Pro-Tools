@@ -9,7 +9,6 @@ app.secret_key = "clipster_secret_key_123"
 
 init_db()
 
-
 # ================= HELPERS =================
 
 def hash_password(p):
@@ -36,7 +35,10 @@ def login():
     if request.method == "GET":
         return render_template("login.html")
 
-    data = request.json
+    data = request.json or {}
+
+    if "username" not in data or "password" not in data:
+        return jsonify({"status": "fail", "msg": "missing fields"})
 
     user = get_user(
         data["username"],
@@ -59,13 +61,11 @@ def login():
 def register():
     data = request.json
 
-    api_key = generate_api_key()
-
     try:
         create_user(
             data["username"],
             hash_password(data["password"]),
-            api_key
+            generate_api_key()
         )
         return jsonify({"status": "registered"})
 
@@ -81,6 +81,7 @@ def create_task():
         return jsonify({"error": "not logged in"})
 
     data = request.json
+
     task_id = str(int(time.time()))
 
     save_task(
@@ -145,7 +146,7 @@ def stats():
     })
 
 
-# ================= WORKER ENDPOINT =================
+# ================= WORKER =================
 
 @app.route("/pending_tasks")
 def pending_tasks():
