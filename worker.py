@@ -1,16 +1,20 @@
-import requests
+import redis
+import json
 import time
-import os
-import ast
+import requests
 
-BASE_URL = os.getenv("BASE_URL", "https://clipster-pro-tools.onrender.com")
+BASE_URL = "https://clipster-pro-tools.onrender.com"
+
+rdb = redis.Redis(
+    host="YOUR_REDIS_HOST",
+    port=6379,
+    password="YOUR_REDIS_PASSWORD",
+    decode_responses=True
+)
 
 
-def get_tasks():
-    try:
-        return requests.get(BASE_URL + "/pending_tasks", timeout=30).json()
-    except:
-        return []
+def check_cancel(task_id):
+    return rdb.get(f"cancel:{task_id}") == "1"
 
 
 def push_result(task_id, reel, duration):
@@ -21,67 +25,55 @@ def push_result(task_id, reel, duration):
     })
 
 
-def get_task(task_id):
-    try:
-        return requests.get(f"{BASE_URL}/get_task/{task_id}", timeout=30).json()
-    except:
-        return None
+def run_worker():
 
+    while True:
 
-def is_cancelled(task_id):
-    task = get_task(task_id)
-    if not task:
-        return True
-    return task["task"].get("cancelled", 0) == 1
+        task_json = rdb.brpop("task_queue", timeout=10)
 
+        if not task_json:
+            continue
 
-def run():
-
-    tasks = get_tasks()
-
-    if not tasks:
-        print("No tasks")
-        return
-
-    for task in tasks:
+        task = json.loads(task_json[1])
 
         task_id = task["task_id"]
 
-        print("\nProcessing:", task_id)
+        pages = task["pages"]
+        limit = task["limit"]
 
-        full = get_task(task_id)
-        task_data = full["task"]
+        total = len(pages)
+        done = 0
 
-        pages = ast.literal_eval(task_data["pages"])
-        limit = task_data["limit_count"]
+        for page in pages:
 
-        total_pages = len(pages)
-
-        for idx, page in enumerate(pages):
-
-            if is_cancelled(task_id):
-                print("TASK CANCELLED:", task_id)
-                return
-
-            print(f"[{task_id}] Page {idx+1}/{total_pages}")
+            if check_cancel(task_id):
+                print("Cancelled:", task_id)
+                break
 
             for i in range(limit):
 
-                if is_cancelled(task_id):
-                    print("TASK CANCELLED:", task_id)
-                    return
+                if check_cancel(task_id):
+                    print("Cancelled mid-task:", task_id)
+                    break
 
                 reel = f"{page}/reel/{i}"
                 duration = 30 + i
 
-                time.sleep(0.8)
+                time.sleep(1)
 
                 if 28 <= duration <= 41:
                     push_result(task_id, reel, duration)
-                    print("MATCH:", reel)
 
-    print("Worker finished")
+            done += 1
+            progress = int((done / total) * 100)
+
+            requests.post(BASE_URL + "/push_progress", json={
+                "task_id": task_id,
+                "progress": progress
+            })
+
+        print("Task finished:", task_id)
 
 
 if __name__ == "__main__":
-    run()
+    run_worker()
