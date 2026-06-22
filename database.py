@@ -11,16 +11,6 @@ def init_db():
     conn = get_connection()
     cur = conn.cursor()
 
-    # USERS
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        username TEXT PRIMARY KEY,
-        password TEXT,
-        api_key TEXT
-    )
-    """)
-
-    # TASKS (QUEUE SYSTEM)
     cur.execute("""
     CREATE TABLE IF NOT EXISTS tasks (
         task_id TEXT PRIMARY KEY,
@@ -28,11 +18,14 @@ def init_db():
         status TEXT,
         pages TEXT,
         limit_count INTEGER,
-        created_at TEXT
+        created_at TEXT,
+        progress INTEGER DEFAULT 0,
+        current_page INTEGER DEFAULT 0,
+        logs TEXT DEFAULT '',
+        cancelled INTEGER DEFAULT 0
     )
     """)
 
-    # RESULTS
     cur.execute("""
     CREATE TABLE IF NOT EXISTS results (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,7 +46,8 @@ def save_task(task_id, username, status, pages, limit_count, created_at):
     cur = conn.cursor()
 
     cur.execute("""
-    INSERT INTO tasks VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO tasks(task_id, username, status, pages, limit_count, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)
     """, (task_id, username, status, pages, limit_count, created_at))
 
     conn.commit()
@@ -64,11 +58,9 @@ def get_all_tasks():
     conn = get_connection()
     cur = conn.cursor()
 
-    cur.execute("""
-    SELECT * FROM tasks ORDER BY created_at DESC
-    """)
-
+    cur.execute("SELECT * FROM tasks ORDER BY created_at DESC")
     rows = cur.fetchall()
+
     conn.close()
 
     return [
@@ -78,7 +70,11 @@ def get_all_tasks():
             "status": r[2],
             "pages": r[3],
             "limit": r[4],
-            "created_at": r[5]
+            "created_at": r[5],
+            "progress": r[6],
+            "current_page": r[7],
+            "logs": r[8],
+            "cancelled": r[9]
         }
         for r in rows
     ]
@@ -95,13 +91,28 @@ def get_task_info(task_id):
     return row
 
 
-def update_task_status(task_id, status):
+def update_progress(task_id, progress, page_index, logs):
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute("""
-    UPDATE tasks SET status=? WHERE task_id=?
-    """, (status, task_id))
+    UPDATE tasks
+    SET progress=?, current_page=?, logs=?
+    WHERE task_id=?
+    """, (progress, page_index, logs, task_id))
+
+    conn.commit()
+    conn.close()
+
+
+def cancel_task(task_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    UPDATE tasks SET cancelled=1, status='cancelled'
+    WHERE task_id=?
+    """, (task_id,))
 
     conn.commit()
     conn.close()
@@ -128,7 +139,6 @@ def get_task_results(task_id):
     SELECT reel_url, duration
     FROM results
     WHERE task_id=?
-    ORDER BY duration DESC
     """)
 
     rows = cur.fetchall()
