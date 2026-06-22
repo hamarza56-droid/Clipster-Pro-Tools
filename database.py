@@ -4,13 +4,26 @@ DB_NAME = "clipster.db"
 
 
 def get_connection():
-    return sqlite3.connect(DB_NAME, check_same_thread=False)
+    conn = sqlite3.connect(DB_NAME, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def init_db():
     conn = get_connection()
     cur = conn.cursor()
 
+    # USERS TABLE (FIX FOR LOGIN CRASH)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        password TEXT,
+        api_key TEXT
+    )
+    """)
+
+    # TASKS TABLE (QUEUE + PROGRESS + CANCEL)
     cur.execute("""
     CREATE TABLE IF NOT EXISTS tasks (
         task_id TEXT PRIMARY KEY,
@@ -26,6 +39,7 @@ def init_db():
     )
     """)
 
+    # RESULTS TABLE
     cur.execute("""
     CREATE TABLE IF NOT EXISTS results (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +53,34 @@ def init_db():
     conn.close()
 
 
-# ================= TASK HELPERS =================
+# ================= USERS =================
+
+def create_user(username, password, api_key):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO users(username, password, api_key)
+        VALUES (?, ?, ?)
+    """, (username, password, api_key))
+    conn.commit()
+    conn.close()
+
+
+def get_user(username, password_hash):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT api_key FROM users
+        WHERE username=? AND password=?
+    """, (username, password_hash))
+
+    user = cur.fetchone()
+    conn.close()
+    return user
+
+
+# ================= TASKS =================
 
 def save_task(task_id, username, status, pages, limit_count, created_at):
     conn = get_connection()
@@ -60,24 +101,9 @@ def get_all_tasks():
 
     cur.execute("SELECT * FROM tasks ORDER BY created_at DESC")
     rows = cur.fetchall()
-
     conn.close()
 
-    return [
-        {
-            "task_id": r[0],
-            "username": r[1],
-            "status": r[2],
-            "pages": r[3],
-            "limit": r[4],
-            "created_at": r[5],
-            "progress": r[6],
-            "current_page": r[7],
-            "logs": r[8],
-            "cancelled": r[9]
-        }
-        for r in rows
-    ]
+    return [dict(row) for row in rows]
 
 
 def get_task_info(task_id):
@@ -88,7 +114,7 @@ def get_task_info(task_id):
     row = cur.fetchone()
 
     conn.close()
-    return row
+    return dict(row) if row else None
 
 
 def update_progress(task_id, progress, page_index, logs):
@@ -118,6 +144,8 @@ def cancel_task(task_id):
     conn.close()
 
 
+# ================= RESULTS =================
+
 def save_result(task_id, reel_url, duration):
     conn = get_connection()
     cur = conn.cursor()
@@ -139,9 +167,9 @@ def get_task_results(task_id):
     SELECT reel_url, duration
     FROM results
     WHERE task_id=?
-    """)
+    """, (task_id,))
 
     rows = cur.fetchall()
     conn.close()
 
-    return rows
+    return [dict(row) for row in rows]
