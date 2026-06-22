@@ -7,102 +7,173 @@
 <style>
 
 body{
-    background:#0f1115;
-    color:white;
-    font-family:Arial;
     margin:0;
+    font-family: Arial, sans-serif;
+    background: radial-gradient(circle at top, #0f172a, #05070d);
+    color:white;
 }
 
 /* HEADER */
 .header{
-    background:#171b22;
-    padding:20px;
-    font-size:24px;
-    font-weight:bold;
-    color:#4ade80;
+    padding:18px 40px;
     display:flex;
     justify-content:space-between;
+    align-items:center;
+    font-size:18px;
+    font-weight:bold;
+    color:#4ade80;
+    border-bottom:1px solid rgba(255,255,255,0.05);
 }
 
-/* LAYOUT */
+/* HERO */
+.hero{
+    padding:40px;
+    text-align:center;
+}
+
+.hero h1{
+    font-size:34px;
+    margin-bottom:10px;
+}
+
+.hero p{
+    color:#aaa;
+    max-width:750px;
+    margin:auto;
+    line-height:1.6;
+}
+
+/* CONTAINER */
 .container{
     width:90%;
+    max-width:1100px;
     margin:auto;
-    padding:20px;
 }
 
-/* CARD */
+/* GLASS CARD */
 .card{
-    background:#171b22;
-    padding:20px;
-    border-radius:12px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:16px;
+    padding:25px;
     margin-bottom:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
 }
 
 /* INPUT */
 textarea, input{
     width:100%;
-    background:#0f1115;
+    background: rgba(0,0,0,0.3);
     color:white;
-    border:1px solid #333;
-    padding:10px;
+    border:1px solid rgba(255,255,255,0.1);
+    padding:12px;
+    border-radius:10px;
+    outline:none;
 }
 
 /* BUTTON */
 button{
-    background:#4ade80;
-    border:none;
-    padding:10px 20px;
+    background: rgba(74,222,128,0.15);
+    border:1px solid rgba(74,222,128,0.4);
+    color:#4ade80;
+    padding:12px 18px;
+    border-radius:12px;
     cursor:pointer;
     font-weight:bold;
+    transition:0.25s;
     margin-top:10px;
 }
 
-/* PROGRESS BAR */
+button:hover{
+    background: rgba(74,222,128,0.25);
+    transform: scale(1.03);
+}
+
+/* DISABLED BUTTON */
+button:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+}
+
+/* STATUS BADGE */
+.status{
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.running{
+    background: rgba(250,204,21,0.15);
+    color:#facc15;
+    border:1px solid rgba(250,204,21,0.4);
+    animation: pulse 1.5s infinite;
+}
+
+.done{
+    background: rgba(74,222,128,0.15);
+    color:#4ade80;
+}
+
+.cancelled{
+    background: rgba(239,68,68,0.15);
+    color:#ef4444;
+}
+
+@keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(250,204,21,0.3);}
+    70%{box-shadow:0 0 0 10px rgba(250,204,21,0);}
+    100%{box-shadow:0 0 0 0 rgba(250,204,21,0);}
+}
+
+/* PROGRESS */
 .progress-bar{
     width:100%;
-    background:#333;
-    height:20px;
-    border-radius:10px;
+    height:14px;
+    background: rgba(255,255,255,0.08);
+    border-radius:20px;
     overflow:hidden;
-    margin-top:10px;
+    margin-top:15px;
 }
 
 .progress-fill{
     height:100%;
     width:0%;
-    background:#4ade80;
+    background: linear-gradient(90deg,#facc15,#4ade80);
     transition:0.3s;
 }
 
-/* LOG BOX */
+/* LOGS */
 .log-box{
-    height:300px;
+    height:260px;
     overflow-y:auto;
-    background:black;
-    padding:10px;
+    background: rgba(0,0,0,0.35);
+    padding:12px;
+    border-radius:12px;
     font-family:monospace;
-    font-size:13px;
-    border-radius:10px;
+    font-size:12px;
 }
 
 .log-line{
+    color:#bbb;
     margin:2px 0;
-    color:#aaa;
 }
 
-.success{color:#4ade80;}
-.error{color:#ef4444;}
-.warn{color:#facc15;}
-
+/* TABLE */
 table{
     width:100%;
     border-collapse:collapse;
 }
 
 td,th{
-    border:1px solid #333;
+    border:1px solid rgba(255,255,255,0.08);
     padding:10px;
+}
+
+th{
+    background: rgba(255,255,255,0.05);
 }
 
 </style>
@@ -112,7 +183,19 @@ td,th{
 
 <div class="header">
     🚀 Clipster PRO
-    <button onclick="cancelTask()">Cancel Task</button>
+
+    <div>
+        <span id="statusBadge" class="status done">Idle</span>
+        <button onclick="cancelTask()" id="cancelBtn">Cancel</button>
+    </div>
+</div>
+
+<div class="hero">
+    <h1>Instagram Reel Scraping Engine</h1>
+    <p>
+        Clipster PRO extracts Instagram reels, filters high-quality content,
+        and processes tasks with real-time progress tracking and automation.
+    </p>
 </div>
 
 <div class="container">
@@ -120,16 +203,17 @@ td,th{
 <!-- TASK -->
 <div class="card">
 
-<h2>Create Task</h2>
+<h3>Create Task</h3>
 
-<textarea id="pages" placeholder="Enter Instagram pages"></textarea>
+<textarea id="pages" placeholder="Enter Instagram pages (one per line)"></textarea>
+
 <br><br>
 
 <input id="limit" value="10">
 
 <br>
 
-<button onclick="startTask()">Start Scraping</button>
+<button onclick="startTask()" id="startBtn">Start Scraping</button>
 
 <div class="progress-bar">
     <div class="progress-fill" id="progress"></div>
@@ -140,7 +224,7 @@ td,th{
 <!-- LOGS -->
 <div class="card">
 
-<h2>Live Logs</h2>
+<h3>Live Logs</h3>
 <div class="log-box" id="logs"></div>
 
 </div>
@@ -148,13 +232,13 @@ td,th{
 <!-- RESULTS -->
 <div class="card">
 
-<h2>Results</h2>
+<h3>Results</h3>
 
 <table>
 <thead>
 <tr>
 <th>Duration</th>
-<th>URL</th>
+<th>Reel URL</th>
 </tr>
 </thead>
 <tbody id="results"></tbody>
@@ -168,12 +252,30 @@ td,th{
 
 let currentTask = null;
 
+// ================= UI STATE =================
+
+function setRunningUI(){
+    document.getElementById("statusBadge").innerText = "Scraping...";
+    document.getElementById("statusBadge").className = "status running";
+
+    document.getElementById("startBtn").disabled = true;
+}
+
+function setIdleUI(){
+    document.getElementById("statusBadge").innerText = "Idle";
+    document.getElementById("statusBadge").className = "status done";
+
+    document.getElementById("startBtn").disabled = false;
+}
+
 // ================= START TASK =================
 
 async function startTask(){
 
     document.getElementById("logs").innerHTML = "";
     document.getElementById("progress").style.width = "0%";
+
+    setRunningUI();
 
     let pages = document.getElementById("pages").value
         .split("\n")
@@ -193,59 +295,49 @@ async function startTask(){
 
     log("🚀 Task started: " + currentTask);
 
-    pollTask();   // START LIVE TRACKING
+    pollTask();
 }
 
-
-// ================= POLLING (REPLACED SOCKET.IO) =================
+// ================= POLLING =================
 
 async function pollTask(){
 
     if(!currentTask) return;
 
-    try{
+    let res = await fetch("/get_task/" + currentTask);
+    let data = await res.json();
 
-        let res = await fetch("/get_task/" + currentTask);
-        let data = await res.json();
+    if(!data.task){
+        setTimeout(pollTask, 2000);
+        return;
+    }
 
-        if(!data.task){
-            setTimeout(pollTask, 2000);
-            return;
-        }
+    let task = data.task;
 
-        let task = data.task;
+    document.getElementById("progress").style.width =
+        (task.progress || 0) + "%";
 
-        // progress
-        document.getElementById("progress").style.width =
-            (task.progress || 0) + "%";
+    if(task.logs){
+        log(task.logs);
+    }
 
-        // logs
-        if(task.logs){
-            log(task.logs);
-        }
+    if(task.status === "running"){
+        setTimeout(pollTask, 2000);
+    }
 
-        // status
-        if(task.status === "running"){
-            setTimeout(pollTask, 2000);
-        }
+    else if(task.status === "done"){
+        log("✅ Completed");
+        setIdleUI();
+        renderResults(data.results);
+    }
 
-        else if(task.status === "done"){
-            log("✅ Task Completed");
-            renderResults(data.results);
-        }
-
-        else if(task.status === "cancelled"){
-            log("❌ Task Cancelled");
-        }
-
-    } catch(e){
-        console.log("poll error", e);
-        setTimeout(pollTask, 3000);
+    else if(task.status === "cancelled"){
+        log("❌ Cancelled");
+        setIdleUI();
     }
 }
 
-
-// ================= CANCEL TASK =================
+// ================= CANCEL =================
 
 async function cancelTask(){
 
@@ -253,11 +345,10 @@ async function cancelTask(){
 
     await fetch("/cancel_task/" + currentTask);
 
-    log("❌ Cancel request sent");
+    log("❌ Cancel requested");
 }
 
-
-// ================= LOGS =================
+// ================= LOG =================
 
 function log(msg){
 
@@ -271,7 +362,6 @@ function log(msg){
     box.scrollTop = box.scrollHeight;
 }
 
-
 // ================= RESULTS =================
 
 function renderResults(data){
@@ -283,11 +373,7 @@ function renderResults(data){
         html += `
         <tr>
             <td>${r.duration}</td>
-            <td>
-                <a href="${r.reel_url}" target="_blank">
-                    ${r.reel_url}
-                </a>
-            </td>
+            <td>${r.reel_url}</td>
         </tr>`;
     }
 
