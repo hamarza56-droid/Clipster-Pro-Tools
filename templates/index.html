@@ -2,30 +2,27 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clipster SaaS Control System</title>
-
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<title>Clipster SaaS Dashboard</title>
 
 <style>
 
-/* ================= ROOT ================= */
+/* ================= GLOBAL ================= */
 body{
     margin:0;
-    font-family:Inter, Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
     background:
         radial-gradient(circle at top,#0f172a,#05070d),
-        linear-gradient(180deg, rgba(74,222,128,0.05), transparent);
+        linear-gradient(180deg,#0b1220,#05070d);
     color:white;
-    overflow:hidden;
 }
 
-/* subtle noise overlay */
+/* subtle noise */
 body::before{
     content:"";
     position:fixed;
-    top:0;left:0;right:0;bottom:0;
+    inset:0;
     background-image:url("https://www.transparenttextures.com/patterns/noise.png");
-    opacity:0.05;
+    opacity:0.04;
     pointer-events:none;
 }
 
@@ -48,179 +45,94 @@ body::before{
     font-size:18px;
     font-weight:bold;
     color:#4ade80;
-    margin-bottom:25px;
+    margin-bottom:30px;
 }
 
-.nav button{
-    width:100%;
-    text-align:left;
+.nav a{
+    display:block;
     padding:12px;
     margin-bottom:8px;
     border-radius:12px;
-    background:transparent;
-    border:1px solid rgba(255,255,255,0.08);
+    text-decoration:none;
     color:white;
-    cursor:pointer;
+    border:1px solid rgba(255,255,255,0.08);
     transition:0.25s;
 }
 
-.nav button:hover{
+.nav a:hover{
     border-color:#4ade80;
-    transform:translateX(4px);
+    transform:translateX(5px);
 }
 
 /* ================= MAIN ================= */
 .main{
     flex:1;
-    display:flex;
-    flex-direction:column;
+    padding:25px;
 }
 
-/* ================= TOPBAR ================= */
+/* ================= TOP BAR ================= */
 .topbar{
-    height:60px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:0 20px;
-    border-bottom:1px solid rgba(255,255,255,0.06);
-    backdrop-filter: blur(15px);
+    margin-bottom:20px;
 }
 
-.command{
-    width:50%;
+.search{
+    width:60%;
 }
 
-.command input{
+.search input{
     width:100%;
-    padding:10px 14px;
+    padding:12px;
     border-radius:12px;
     background:rgba(0,0,0,0.3);
     border:1px solid rgba(255,255,255,0.08);
     color:white;
 }
 
-/* ================= WORKSPACE ================= */
-.workspace{
-    flex:1;
-    padding:20px;
-    overflow:auto;
+/* ================= CARDS ================= */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
 }
 
-/* ================= GLASS CARD (PREMIUM) ================= */
 .card{
-    background:
-        linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    background:rgba(255,255,255,0.05);
     border:1px solid rgba(255,255,255,0.08);
-    border-radius:18px;
-    padding:22px;
-    margin-bottom:18px;
+    border-radius:16px;
+    padding:18px;
     backdrop-filter: blur(18px);
-    box-shadow:
-        0 10px 30px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.05);
     transition:0.25s;
 }
 
 .card:hover{
-    transform:translateY(-2px);
+    transform:translateY(-4px);
     border-color:rgba(74,222,128,0.3);
 }
 
-/* ================= INPUTS ================= */
-textarea,input{
-    width:100%;
-    padding:12px;
-    border-radius:12px;
-    background:rgba(0,0,0,0.35);
-    border:1px solid rgba(255,255,255,0.08);
-    color:white;
-    outline:none;
+/* ================= STATS ================= */
+.stat{
+    font-size:22px;
+    font-weight:bold;
+    color:#4ade80;
 }
 
 /* ================= BUTTON ================= */
 button{
     padding:10px 14px;
     border-radius:12px;
-    cursor:pointer;
-    border:1px solid rgba(74,222,128,0.4);
     background:rgba(74,222,128,0.12);
+    border:1px solid rgba(74,222,128,0.4);
     color:#4ade80;
+    cursor:pointer;
     transition:0.25s;
 }
 
 button:hover{
-    background:rgba(74,222,128,0.25);
+    transform:scale(1.03);
     box-shadow:0 0 20px rgba(74,222,128,0.15);
-    transform:translateY(-1px);
-}
-
-/* ================= STATUS ================= */
-.status{
-    padding:6px 14px;
-    border-radius:999px;
-    font-size:12px;
-    border:1px solid rgba(255,255,255,0.1);
-}
-
-.running{
-    background:rgba(250,204,21,0.12);
-    color:#facc15;
-    animation:pulse 1.5s infinite;
-}
-
-.done{
-    background:rgba(74,222,128,0.12);
-    color:#4ade80;
-}
-
-.cancelled{
-    background:rgba(239,68,68,0.12);
-    color:#ef4444;
-}
-
-@keyframes pulse{
-    0%{box-shadow:0 0 0 0 rgba(250,204,21,0.3);}
-    70%{box-shadow:0 0 0 12px rgba(250,204,21,0);}
-    100%{box-shadow:0 0 0 0 rgba(250,204,21,0);}
-}
-
-/* ================= PROGRESS ================= */
-.progress{
-    height:12px;
-    background:rgba(255,255,255,0.06);
-    border-radius:999px;
-    overflow:hidden;
-    margin-top:15px;
-}
-
-.fill{
-    height:100%;
-    width:0%;
-    background:linear-gradient(90deg,#facc15,#4ade80);
-    transition:0.4s cubic-bezier(.4,0,.2,1);
-}
-
-/* ================= LOGS ================= */
-.log-box{
-    height:260px;
-    overflow:auto;
-    background:rgba(0,0,0,0.35);
-    padding:12px;
-    border-radius:14px;
-    font-family:monospace;
-    font-size:12px;
-}
-
-/* smooth log appearance */
-.log-line{
-    opacity:0;
-    transform:translateY(4px);
-    animation:fadeIn 0.2s forwards;
-}
-
-@keyframes fadeIn{
-    to{opacity:1;transform:translateY(0);}
 }
 
 </style>
@@ -235,159 +147,60 @@ button:hover{
     <div class="logo">🚀 Clipster SaaS</div>
 
     <div class="nav">
-        <button onclick="show('scraper')">🕷 Scraper</button>
-        <button onclick="show('campaigns')">🏷 Campaigns</button>
-        <button onclick="show('editor')">🎬 Reel Editor</button>
-        <button onclick="show('team')">👥 Team Hub</button>
-        <button onclick="show('history')">📜 History</button>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/scraper.html">Scraper Engine</a>
+        <a href="/campaigns.html">Campaigns</a>
+        <a href="/team.html">Team Hub</a>
+        <a href="/editor.html">Reel Editor</a>
+        <a href="/history.html">History</a>
     </div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-<!-- TOPBAR -->
+<!-- TOP -->
 <div class="topbar">
-    <div class="command">
-        <input placeholder="Search tools, tasks, campaigns... (UI only)">
+    <h2>Dashboard</h2>
+
+    <div class="search">
+        <input placeholder="Search tools, campaigns, tasks...">
     </div>
-
-    <span id="status" class="status done">Idle</span>
 </div>
 
-<!-- WORKSPACE -->
-<div class="workspace">
-
-<!-- SCRAPER -->
-<div id="scraper" class="module">
+<!-- STATS GRID -->
+<div class="grid">
 
 <div class="card">
-<h3>Scraper Engine</h3>
-
-<textarea id="pages" placeholder="Instagram pages"></textarea>
-<br><br>
-
-<input id="limit" value="10">
-
-<br><br>
-
-<button onclick="startTask()" id="startBtn">Start Scraping</button>
-
-<div class="progress">
-    <div class="fill" id="progress"></div>
-</div>
+    <div>Total Tasks</div>
+    <div class="stat">128</div>
 </div>
 
 <div class="card">
-<h3>Live Activity</h3>
-<div class="log-box" id="logs"></div>
+    <div>Active Campaigns</div>
+    <div class="stat">6</div>
+</div>
+
+<div class="card">
+    <div>Team Members</div>
+    <div class="stat">4</div>
 </div>
 
 </div>
 
-<!-- PLACEHOLDERS -->
-<div id="campaigns" class="module"><div class="card">Campaign System UI</div></div>
-<div id="editor" class="module"><div class="card">Reel Editor UI</div></div>
-<div id="team" class="module"><div class="card">Team Hub UI</div></div>
-<div id="history" class="module"><div class="card">History UI</div></div>
+<br>
 
+<div class="card">
+    <h3>System Overview</h3>
+    <p style="color:#aaa">
+        Clipster SaaS automation dashboard for managing scraping, campaigns,
+        team workflow and reel processing pipeline.
+    </p>
 </div>
 
 </div>
 
-<script>
-
-let currentTask = null;
-
-/* NAV */
-function show(id){
-    document.querySelectorAll('.module')
-    .forEach(m=>m.style.display="none");
-
-    document.getElementById(id).style.display="block";
-}
-
-/* INIT */
-show('scraper');
-
-/* STATUS */
-function setStatus(type){
-    let el = document.getElementById("status");
-    el.className = "status " + type;
-
-    if(type==="running") el.innerText="Running";
-    if(type==="done") el.innerText="Done";
-    if(type==="cancelled") el.innerText="Cancelled";
-}
-
-/* START */
-async function startTask(){
-
-    document.getElementById("logs").innerHTML = "";
-    document.getElementById("progress").style.width = "0%";
-
-    setStatus("running");
-
-    let pages = document.getElementById("pages").value
-        .split("\n").filter(x=>x.trim());
-
-    let limit = parseInt(document.getElementById("limit").value);
-
-    let res = await fetch("/create_task",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({pages,limit})
-    });
-
-    let data = await res.json();
-
-    currentTask = data.task_id;
-
-    addLog("Task started: " + currentTask);
-
-    poll();
-}
-
-/* POLL */
-async function poll(){
-
-    if(!currentTask) return;
-
-    let res = await fetch("/get_task/"+currentTask);
-    let data = await res.json();
-
-    if(!data.task) return setTimeout(poll,1500);
-
-    let t = data.task;
-
-    document.getElementById("progress").style.width =
-        (t.progress||0)+"%";
-
-    if(t.logs) addLog(t.logs);
-
-    if(t.status==="running") setTimeout(poll,1500);
-
-    if(t.status==="done"){
-        addLog("Completed");
-        setStatus("done");
-    }
-
-    if(t.status==="cancelled"){
-        addLog("Cancelled");
-        setStatus("cancelled");
-    }
-}
-
-/* LOG */
-function addLog(msg){
-    let box=document.getElementById("logs");
-    let d=document.createElement("div");
-    d.className="log-line";
-    d.innerText=msg;
-    box.appendChild(d);
-}
-
-</script>
+</div>
 
 </body>
 </html>
