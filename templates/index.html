@@ -2,26 +2,26 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clipster SaaS Dashboard</title>
+<title>Clipster SaaS System</title>
 
 <style>
 
-/* ================= GLOBAL ================= */
+/* ================= BASE ================= */
 body{
     margin:0;
-    font-family: Inter, Arial, sans-serif;
+    font-family:Inter, Arial, sans-serif;
     background:
         radial-gradient(circle at top,#0f172a,#05070d),
         linear-gradient(180deg,#0b1220,#05070d);
     color:white;
 }
 
-/* subtle noise */
+/* noise layer */
 body::before{
     content:"";
     position:fixed;
     inset:0;
-    background-image:url("https://www.transparenttextures.com/patterns/noise.png");
+    background:url("https://www.transparenttextures.com/patterns/noise.png");
     opacity:0.04;
     pointer-events:none;
 }
@@ -34,9 +34,9 @@ body::before{
 
 /* ================= SIDEBAR ================= */
 .sidebar{
-    width:260px;
+    width:280px;
     background:rgba(255,255,255,0.03);
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(20px);
     border-right:1px solid rgba(255,255,255,0.06);
     padding:20px;
 }
@@ -45,7 +45,14 @@ body::before{
     font-size:18px;
     font-weight:bold;
     color:#4ade80;
-    margin-bottom:30px;
+    margin-bottom:20px;
+}
+
+.system-title{
+    font-size:12px;
+    color:#888;
+    margin-bottom:20px;
+    line-height:1.4;
 }
 
 .nav a{
@@ -68,33 +75,28 @@ body::before{
 .main{
     flex:1;
     padding:25px;
+    overflow:auto;
 }
 
-/* ================= TOP BAR ================= */
-.topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+/* ================= HEADER ================= */
+.header{
     margin-bottom:20px;
 }
 
-.search{
-    width:60%;
+.header h1{
+    margin:0;
 }
 
-.search input{
-    width:100%;
-    padding:12px;
-    border-radius:12px;
-    background:rgba(0,0,0,0.3);
-    border:1px solid rgba(255,255,255,0.08);
-    color:white;
+.header p{
+    color:#aaa;
+    max-width:700px;
+    line-height:1.6;
 }
 
-/* ================= CARDS ================= */
+/* ================= SYSTEM CARDS ================= */
 .grid{
     display:grid;
-    grid-template-columns:repeat(3,1fr);
+    grid-template-columns:repeat(2,1fr);
     gap:15px;
 }
 
@@ -112,11 +114,22 @@ body::before{
     border-color:rgba(74,222,128,0.3);
 }
 
-/* ================= STATS ================= */
-.stat{
-    font-size:22px;
-    font-weight:bold;
+/* ================= TOOL LABEL ================= */
+.tool{
+    font-size:12px;
     color:#4ade80;
+    margin-bottom:6px;
+}
+
+/* ================= WORKFLOW ================= */
+.flow{
+    margin-top:15px;
+    padding:12px;
+    border-radius:12px;
+    background:rgba(0,0,0,0.25);
+    border:1px solid rgba(255,255,255,0.06);
+    font-size:13px;
+    color:#bbb;
 }
 
 /* ================= BUTTON ================= */
@@ -144,58 +157,88 @@ button:hover{
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-    <div class="logo">🚀 Clipster SaaS</div>
 
-    <div class="nav">
-        <a href="/dashboard.html">Dashboard</a>
-        <a href="/scraper.html">Scraper Engine</a>
-        <a href="/campaigns.html">Campaigns</a>
-        <a href="/team.html">Team Hub</a>
-        <a href="/editor.html">Reel Editor</a>
-        <a href="/history.html">History</a>
-    </div>
+<div class="logo">🚀 Clipster SaaS OS</div>
+
+<div class="system-title">
+A workflow automation system for scraping, processing,
+and submitting reels into Clipster campaigns.
+</div>
+
+<div class="nav">
+<a href="#">🏠 System Home</a>
+<a href="#">🕷 Scraper Engine</a>
+<a href="#">🎯 Campaign Rules</a>
+<a href="#">🎬 Reel Processor</a>
+<a href="#">👥 Team Hub</a>
+<a href="#">📤 Submissions</a>
+</div>
+
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-<!-- TOP -->
-<div class="topbar">
-    <h2>Dashboard</h2>
-
-    <div class="search">
-        <input placeholder="Search tools, campaigns, tasks...">
-    </div>
+<div class="header">
+<h1>System Overview</h1>
+<p>
+Clipster SaaS is a workflow automation platform that connects scraping,
+content filtering, reel processing and campaign submission into a single system.
+</p>
 </div>
 
-<!-- STATS GRID -->
+<!-- SYSTEM CARDS -->
 <div class="grid">
 
 <div class="card">
-    <div>Total Tasks</div>
-    <div class="stat">128</div>
+<div class="tool">🕷 SCRAPER ENGINE</div>
+<div>Extract Instagram reels from target pages</div>
+
+<div class="flow">
+Step 1 → Input pages<br>
+Step 2 → System fetches reels<br>
+Step 3 → Filters by duration & rules<br>
+Step 4 → Sends results to pipeline
+</div>
+
+<button>Open Scraper</button>
 </div>
 
 <div class="card">
-    <div>Active Campaigns</div>
-    <div class="stat">6</div>
+<div class="tool">🎯 CAMPAIGN SYSTEM</div>
+<div>Define rules for each client campaign</div>
+
+<div class="flow">
+• CS2Skin → logo filter ON<br>
+• Hellcase → gameplay only<br>
+• Tradeit → short reels priority
+</div>
+
+<button>Open Campaigns</button>
 </div>
 
 <div class="card">
-    <div>Team Members</div>
-    <div class="stat">4</div>
+<div class="tool">🎬 REEL PROCESSOR</div>
+<div>Auto crop + background + branding system</div>
+
+<div class="flow">
+Input reel → detect gameplay → crop → add logo → export
 </div>
 
+<button>Open Processor</button>
 </div>
-
-<br>
 
 <div class="card">
-    <h3>System Overview</h3>
-    <p style="color:#aaa">
-        Clipster SaaS automation dashboard for managing scraping, campaigns,
-        team workflow and reel processing pipeline.
-    </p>
+<div class="tool">👥 TEAM SYSTEM</div>
+<div>Track team performance and submissions</div>
+
+<div class="flow">
+Members → tasks → earnings → campaign output tracking
+</div>
+
+<button>Open Team Hub</button>
+</div>
+
 </div>
 
 </div>
