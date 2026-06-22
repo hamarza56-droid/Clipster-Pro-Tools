@@ -2,47 +2,92 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clipster PRO SaaS</title>
+<title>Clipster SaaS Control Center</title>
 
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
 <style>
+
+/* ========== BASE ========== */
 body{
     margin:0;
     font-family:Arial;
     background: radial-gradient(circle at top,#0f172a,#05070d);
     color:white;
+    display:flex;
 }
 
-/* HEADER */
+/* ========== SIDEBAR ========== */
+.sidebar{
+    width:240px;
+    height:100vh;
+    background:rgba(255,255,255,0.03);
+    border-right:1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(15px);
+    padding:20px;
+}
+
+.logo{
+    color:#4ade80;
+    font-weight:bold;
+    margin-bottom:30px;
+    font-size:18px;
+}
+
+.nav{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.nav button{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.08);
+    color:white;
+    padding:10px;
+    border-radius:10px;
+    cursor:pointer;
+    text-align:left;
+}
+
+.nav button:hover{
+    border-color:#4ade80;
+}
+
+/* ========== MAIN ========== */
+.main{
+    flex:1;
+    padding:25px;
+}
+
+/* ========== HEADER ========== */
 .header{
-    padding:18px 40px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    border-bottom:1px solid rgba(255,255,255,0.05);
+    margin-bottom:20px;
 }
 
-/* HERO */
-.hero{
-    text-align:center;
-    padding:35px;
+/* ========== MODULES ========== */
+.module{
+    display:none;
 }
 
-.hero h1{font-size:34px;}
-.hero p{color:#aaa;max-width:700px;margin:auto;}
+.active{
+    display:block;
+}
 
-/* CARD */
+/* ========== CARD ========== */
 .card{
     background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(15px);
     border:1px solid rgba(255,255,255,0.08);
     border-radius:16px;
     padding:20px;
     margin-bottom:20px;
+    backdrop-filter: blur(15px);
 }
 
-/* INPUT */
+/* ========== INPUT ========== */
 textarea,input{
     width:100%;
     background:rgba(0,0,0,0.3);
@@ -52,17 +97,31 @@ textarea,input{
     border-radius:10px;
 }
 
-/* BUTTON */
+/* ========== BUTTON ========== */
 button{
     background: rgba(74,222,128,0.15);
     border:1px solid rgba(74,222,128,0.4);
     color:#4ade80;
-    padding:12px 16px;
+    padding:10px 14px;
     border-radius:10px;
     cursor:pointer;
 }
 
-/* PROGRESS */
+button:disabled{
+    opacity:0.4;
+}
+
+/* ========== STATUS ========== */
+.badge{
+    padding:6px 12px;
+    border-radius:20px;
+}
+
+.running{background:#facc15;color:black;}
+.done{background:#4ade80;}
+.cancelled{background:#ef4444;}
+
+/* ========== PROGRESS ========== */
 .progress{
     height:12px;
     background:rgba(255,255,255,0.08);
@@ -70,69 +129,66 @@ button{
     overflow:hidden;
     margin-top:15px;
 }
+
 .fill{
     height:100%;
     width:0%;
     background:linear-gradient(90deg,#facc15,#4ade80);
-    transition:0.3s;
 }
 
-/* LOGS */
 .log-box{
-    height:260px;
+    height:240px;
     overflow:auto;
     background:rgba(0,0,0,0.3);
     padding:10px;
     font-family:monospace;
-    font-size:12px;
 }
-
-.log-line{color:#bbb;margin:2px 0;}
-
-/* STATUS */
-.badge{
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:12px;
-}
-.running{background:#facc15;color:black;}
-.done{background:#4ade80;}
-.cancelled{background:#ef4444;}
 
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    <h3>🚀 Clipster SaaS</h3>
-    <div>
-        <span id="status" class="badge done">Idle</span>
-        <button onclick="cancelTask()">Cancel</button>
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="logo">🚀 Clipster SaaS</div>
+
+    <div class="nav">
+        <button onclick="show('scraper')">🕷 Scraper</button>
+        <button onclick="show('editor')">🎬 Reel Editor</button>
+        <button onclick="show('campaigns')">🏷 Campaigns</button>
+        <button onclick="show('team')">👥 Team</button>
+        <button onclick="show('history')">📜 History</button>
     </div>
 </div>
 
-<div class="hero">
-    <h1>Instagram Reel Engine</h1>
-    <p>Real-time scraping system with live progress, logs and queue processing.</p>
+<!-- MAIN -->
+<div class="main">
+
+<!-- HEADER -->
+<div class="header">
+    <div id="status" class="badge done">Idle</div>
+    <button onclick="cancelTask()">Cancel</button>
 </div>
 
-<div class="card">
-<h3>Create Task</h3>
+<!-- ========== SCRAPER ========== -->
+<div id="scraper" class="module active">
 
-<textarea id="pages" placeholder="pages (one per line)"></textarea>
+<div class="card">
+<h3>Scraper Engine</h3>
+
+<textarea id="pages" placeholder="Instagram pages"></textarea>
 <br><br>
 
 <input id="limit" value="10">
 
 <br><br>
 
-<button onclick="startTask()" id="startBtn">Start Scraping</button>
+<button id="startBtn" onclick="startTask()">Start Scraping</button>
 
 <div class="progress">
     <div class="fill" id="progress"></div>
 </div>
-
 </div>
 
 <div class="card">
@@ -140,61 +196,77 @@ button{
 <div class="log-box" id="logs"></div>
 </div>
 
+</div>
+
+<!-- ========== EDITOR (UI ONLY) ========== -->
+<div id="editor" class="module">
 <div class="card">
-<h3>Results</h3>
-<table width="100%">
-<tbody id="results"></tbody>
-</table>
+<h3>Reel Editor (UI Mock)</h3>
+<p>Upload reel → crop → background change → logo overlay</p>
+</div>
+</div>
+
+<!-- ========== CAMPAIGNS ========== -->
+<div id="campaigns" class="module">
+<div class="card">
+<h3>Campaign Manager</h3>
+<p>Define rules, logos, filters (UI only for now)</p>
+</div>
+</div>
+
+<!-- ========== TEAM ========== -->
+<div id="team" class="module">
+<div class="card">
+<h3>Team Dashboard</h3>
+<p>Members, earnings, submissions (UI placeholder)</p>
+</div>
+</div>
+
+<!-- ========== HISTORY ========== -->
+<div id="history" class="module">
+<div class="card">
+<h3>History</h3>
+<p>Task history UI placeholder</p>
+</div>
+</div>
+
 </div>
 
 <script>
 
-let socket = io();
 let currentTask = null;
 
-// ================= SOCKET REAL TIME =================
+/* ========== NAV ========== */
+function show(id){
+    document.querySelectorAll('.module')
+    .forEach(m => m.classList.remove('active'));
 
-socket.on("log", (data)=>{
-    if(data.task_id !== currentTask) return;
-    addLog(data.msg);
-});
-
-socket.on("progress", (data)=>{
-    if(data.task_id !== currentTask) return;
-    document.getElementById("progress").style.width = data.progress + "%";
-});
-
-socket.on("status", (data)=>{
-    if(data.task_id !== currentTask) return;
-
-    if(data.status === "cancelled"){
-        setStatus("cancelled");
-        addLog("❌ Cancelled");
-    }
-});
-
-// ================= UI =================
-
-function setStatus(type){
-    let el = document.getElementById("status");
-    el.className = "badge " + type;
-
-    if(type === "running") el.innerText = "Running...";
-    if(type === "done") el.innerText = "Done";
-    if(type === "cancelled") el.innerText = "Cancelled";
+    document.getElementById(id).classList.add('active');
 }
 
-// ================= START =================
+/* ========== UI STATE ========== */
+function setRunning(){
+    document.getElementById("status").innerText = "Running...";
+    document.getElementById("status").className = "badge running";
+    document.getElementById("startBtn").disabled = true;
+}
 
+function setIdle(){
+    document.getElementById("status").innerText = "Idle";
+    document.getElementById("status").className = "badge done";
+    document.getElementById("startBtn").disabled = false;
+}
+
+/* ========== START TASK ========== */
 async function startTask(){
 
     document.getElementById("logs").innerHTML = "";
     document.getElementById("progress").style.width = "0%";
 
-    setStatus("running");
+    setRunning();
 
     let pages = document.getElementById("pages").value
-        .split("\n").filter(x=>x.trim());
+        .split("\n").filter(x => x.trim());
 
     let limit = parseInt(document.getElementById("limit").value);
 
@@ -205,32 +277,61 @@ async function startTask(){
     });
 
     let data = await res.json();
-
     currentTask = data.task_id;
 
-    addLog("🚀 Task started: " + currentTask);
+    log("Task started: " + currentTask);
+
+    poll();
 }
 
-// ================= CANCEL =================
-
-async function cancelTask(){
+/* ========== POLLING ========== */
+async function poll(){
 
     if(!currentTask) return;
 
-    await fetch("/cancel_task/"+currentTask);
+    let res = await fetch("/get_task/" + currentTask);
+    let data = await res.json();
 
-    addLog("❌ Cancel requested");
+    if(!data.task){
+        setTimeout(poll,1500);
+        return;
+    }
+
+    let t = data.task;
+
+    document.getElementById("progress").style.width =
+        (t.progress || 0) + "%";
+
+    if(t.logs) log(t.logs);
+
+    if(t.status === "running"){
+        setTimeout(poll,1500);
+    }
+
+    else if(t.status === "done"){
+        log("Completed");
+        setIdle();
+    }
+
+    else if(t.status === "cancelled"){
+        log("Cancelled");
+        setIdle();
+    }
 }
 
-// ================= LOG =================
+/* ========== CANCEL ========== */
+async function cancelTask(){
+    if(!currentTask) return;
+    await fetch("/cancel_task/" + currentTask);
+    log("Cancel requested");
+}
 
-function addLog(msg){
+/* ========== LOG ========== */
+function log(msg){
     let box = document.getElementById("logs");
     let d = document.createElement("div");
-    d.className="log-line";
     d.innerText = msg;
     box.appendChild(d);
-    box.scrollTop = box.scrollHeight;
 }
 
 </script>
