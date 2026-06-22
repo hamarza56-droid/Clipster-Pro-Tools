@@ -2,14 +2,15 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clipster PRO Dashboard</title>
+<title>Clipster PRO SaaS</title>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
 <style>
-
 body{
     margin:0;
-    font-family: Arial, sans-serif;
-    background: radial-gradient(circle at top, #0f172a, #05070d);
+    font-family:Arial;
+    background: radial-gradient(circle at top,#0f172a,#05070d);
     color:white;
 }
 
@@ -19,58 +20,36 @@ body{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    font-size:18px;
-    font-weight:bold;
-    color:#4ade80;
     border-bottom:1px solid rgba(255,255,255,0.05);
 }
 
 /* HERO */
 .hero{
-    padding:40px;
     text-align:center;
+    padding:35px;
 }
 
-.hero h1{
-    font-size:34px;
-    margin-bottom:10px;
-}
+.hero h1{font-size:34px;}
+.hero p{color:#aaa;max-width:700px;margin:auto;}
 
-.hero p{
-    color:#aaa;
-    max-width:750px;
-    margin:auto;
-    line-height:1.6;
-}
-
-/* CONTAINER */
-.container{
-    width:90%;
-    max-width:1100px;
-    margin:auto;
-}
-
-/* GLASS CARD */
+/* CARD */
 .card{
     background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(15px);
     border:1px solid rgba(255,255,255,0.08);
     border-radius:16px;
-    padding:25px;
+    padding:20px;
     margin-bottom:20px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.3);
 }
 
 /* INPUT */
-textarea, input{
+textarea,input{
     width:100%;
-    background: rgba(0,0,0,0.3);
-    color:white;
+    background:rgba(0,0,0,0.3);
     border:1px solid rgba(255,255,255,0.1);
+    color:white;
     padding:12px;
     border-radius:10px;
-    outline:none;
 }
 
 /* BUTTON */
@@ -78,103 +57,47 @@ button{
     background: rgba(74,222,128,0.15);
     border:1px solid rgba(74,222,128,0.4);
     color:#4ade80;
-    padding:12px 18px;
-    border-radius:12px;
+    padding:12px 16px;
+    border-radius:10px;
     cursor:pointer;
-    font-weight:bold;
-    transition:0.25s;
-    margin-top:10px;
-}
-
-button:hover{
-    background: rgba(74,222,128,0.25);
-    transform: scale(1.03);
-}
-
-/* DISABLED BUTTON */
-button:disabled{
-    opacity:0.4;
-    cursor:not-allowed;
-}
-
-/* STATUS BADGE */
-.status{
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:bold;
-}
-
-.running{
-    background: rgba(250,204,21,0.15);
-    color:#facc15;
-    border:1px solid rgba(250,204,21,0.4);
-    animation: pulse 1.5s infinite;
-}
-
-.done{
-    background: rgba(74,222,128,0.15);
-    color:#4ade80;
-}
-
-.cancelled{
-    background: rgba(239,68,68,0.15);
-    color:#ef4444;
-}
-
-@keyframes pulse{
-    0%{box-shadow:0 0 0 0 rgba(250,204,21,0.3);}
-    70%{box-shadow:0 0 0 10px rgba(250,204,21,0);}
-    100%{box-shadow:0 0 0 0 rgba(250,204,21,0);}
 }
 
 /* PROGRESS */
-.progress-bar{
-    width:100%;
-    height:14px;
-    background: rgba(255,255,255,0.08);
+.progress{
+    height:12px;
+    background:rgba(255,255,255,0.08);
     border-radius:20px;
     overflow:hidden;
     margin-top:15px;
 }
-
-.progress-fill{
+.fill{
     height:100%;
     width:0%;
-    background: linear-gradient(90deg,#facc15,#4ade80);
+    background:linear-gradient(90deg,#facc15,#4ade80);
     transition:0.3s;
 }
 
 /* LOGS */
 .log-box{
     height:260px;
-    overflow-y:auto;
-    background: rgba(0,0,0,0.35);
-    padding:12px;
-    border-radius:12px;
+    overflow:auto;
+    background:rgba(0,0,0,0.3);
+    padding:10px;
     font-family:monospace;
     font-size:12px;
 }
 
-.log-line{
-    color:#bbb;
-    margin:2px 0;
-}
+.log-line{color:#bbb;margin:2px 0;}
 
-/* TABLE */
-table{
-    width:100%;
-    border-collapse:collapse;
+/* STATUS */
+.badge{
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
 }
-
-td,th{
-    border:1px solid rgba(255,255,255,0.08);
-    padding:10px;
-}
-
-th{
-    background: rgba(255,255,255,0.05);
-}
+.running{background:#facc15;color:black;}
+.done{background:#4ade80;}
+.cancelled{background:#ef4444;}
 
 </style>
 </head>
@@ -182,159 +105,110 @@ th{
 <body>
 
 <div class="header">
-    🚀 Clipster PRO
-
+    <h3>🚀 Clipster SaaS</h3>
     <div>
-        <span id="statusBadge" class="status done">Idle</span>
-        <button onclick="cancelTask()" id="cancelBtn">Cancel</button>
+        <span id="status" class="badge done">Idle</span>
+        <button onclick="cancelTask()">Cancel</button>
     </div>
 </div>
 
 <div class="hero">
-    <h1>Instagram Reel Scraping Engine</h1>
-    <p>
-        Clipster PRO extracts Instagram reels, filters high-quality content,
-        and processes tasks with real-time progress tracking and automation.
-    </p>
+    <h1>Instagram Reel Engine</h1>
+    <p>Real-time scraping system with live progress, logs and queue processing.</p>
 </div>
 
-<div class="container">
-
-<!-- TASK -->
 <div class="card">
-
 <h3>Create Task</h3>
 
-<textarea id="pages" placeholder="Enter Instagram pages (one per line)"></textarea>
-
+<textarea id="pages" placeholder="pages (one per line)"></textarea>
 <br><br>
 
 <input id="limit" value="10">
 
-<br>
+<br><br>
 
 <button onclick="startTask()" id="startBtn">Start Scraping</button>
 
-<div class="progress-bar">
-    <div class="progress-fill" id="progress"></div>
+<div class="progress">
+    <div class="fill" id="progress"></div>
 </div>
 
 </div>
 
-<!-- LOGS -->
 <div class="card">
-
 <h3>Live Logs</h3>
 <div class="log-box" id="logs"></div>
-
 </div>
 
-<!-- RESULTS -->
 <div class="card">
-
 <h3>Results</h3>
-
-<table>
-<thead>
-<tr>
-<th>Duration</th>
-<th>Reel URL</th>
-</tr>
-</thead>
+<table width="100%">
 <tbody id="results"></tbody>
 </table>
-
-</div>
-
 </div>
 
 <script>
 
+let socket = io();
 let currentTask = null;
 
-// ================= UI STATE =================
+// ================= SOCKET REAL TIME =================
 
-function setRunningUI(){
-    document.getElementById("statusBadge").innerText = "Scraping...";
-    document.getElementById("statusBadge").className = "status running";
+socket.on("log", (data)=>{
+    if(data.task_id !== currentTask) return;
+    addLog(data.msg);
+});
 
-    document.getElementById("startBtn").disabled = true;
+socket.on("progress", (data)=>{
+    if(data.task_id !== currentTask) return;
+    document.getElementById("progress").style.width = data.progress + "%";
+});
+
+socket.on("status", (data)=>{
+    if(data.task_id !== currentTask) return;
+
+    if(data.status === "cancelled"){
+        setStatus("cancelled");
+        addLog("❌ Cancelled");
+    }
+});
+
+// ================= UI =================
+
+function setStatus(type){
+    let el = document.getElementById("status");
+    el.className = "badge " + type;
+
+    if(type === "running") el.innerText = "Running...";
+    if(type === "done") el.innerText = "Done";
+    if(type === "cancelled") el.innerText = "Cancelled";
 }
 
-function setIdleUI(){
-    document.getElementById("statusBadge").innerText = "Idle";
-    document.getElementById("statusBadge").className = "status done";
-
-    document.getElementById("startBtn").disabled = false;
-}
-
-// ================= START TASK =================
+// ================= START =================
 
 async function startTask(){
 
     document.getElementById("logs").innerHTML = "";
     document.getElementById("progress").style.width = "0%";
 
-    setRunningUI();
+    setStatus("running");
 
     let pages = document.getElementById("pages").value
-        .split("\n")
-        .filter(x => x.trim() !== "");
+        .split("\n").filter(x=>x.trim());
 
     let limit = parseInt(document.getElementById("limit").value);
 
-    let res = await fetch("/create_task", {
+    let res = await fetch("/create_task",{
         method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ pages, limit })
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({pages,limit})
     });
 
     let data = await res.json();
 
     currentTask = data.task_id;
 
-    log("🚀 Task started: " + currentTask);
-
-    pollTask();
-}
-
-// ================= POLLING =================
-
-async function pollTask(){
-
-    if(!currentTask) return;
-
-    let res = await fetch("/get_task/" + currentTask);
-    let data = await res.json();
-
-    if(!data.task){
-        setTimeout(pollTask, 2000);
-        return;
-    }
-
-    let task = data.task;
-
-    document.getElementById("progress").style.width =
-        (task.progress || 0) + "%";
-
-    if(task.logs){
-        log(task.logs);
-    }
-
-    if(task.status === "running"){
-        setTimeout(pollTask, 2000);
-    }
-
-    else if(task.status === "done"){
-        log("✅ Completed");
-        setIdleUI();
-        renderResults(data.results);
-    }
-
-    else if(task.status === "cancelled"){
-        log("❌ Cancelled");
-        setIdleUI();
-    }
+    addLog("🚀 Task started: " + currentTask);
 }
 
 // ================= CANCEL =================
@@ -343,41 +217,20 @@ async function cancelTask(){
 
     if(!currentTask) return;
 
-    await fetch("/cancel_task/" + currentTask);
+    await fetch("/cancel_task/"+currentTask);
 
-    log("❌ Cancel requested");
+    addLog("❌ Cancel requested");
 }
 
 // ================= LOG =================
 
-function log(msg){
-
+function addLog(msg){
     let box = document.getElementById("logs");
-
-    let div = document.createElement("div");
-    div.className = "log-line";
-    div.innerText = msg;
-
-    box.appendChild(div);
+    let d = document.createElement("div");
+    d.className="log-line";
+    d.innerText = msg;
+    box.appendChild(d);
     box.scrollTop = box.scrollHeight;
-}
-
-// ================= RESULTS =================
-
-function renderResults(data){
-
-    let html = "";
-
-    for(let r of data){
-
-        html += `
-        <tr>
-            <td>${r.duration}</td>
-            <td>${r.reel_url}</td>
-        </tr>`;
-    }
-
-    document.getElementById("results").innerHTML = html;
 }
 
 </script>
