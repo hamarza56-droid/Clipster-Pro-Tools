@@ -2,117 +2,150 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clipster PRO | SaaS Suite</title>
+<title>Clipster PRO | SaaS Tools Suite</title>
 
 <style>
 
 /* ================= GLOBAL ================= */
 body{
     margin:0;
-    font-family: Inter, Arial;
+    font-family:Inter, Arial;
     background:#05070d;
     color:white;
-    overflow:hidden;
+    overflow-x:hidden;
 }
 
-/* ================= BACKGROUND ================= */
-.bg{
+/* subtle animated glow background */
+body::before{
+    content:"";
     position:fixed;
-    width:100%;
-    height:100%;
+    width:600px;
+    height:600px;
+    background:radial-gradient(circle,#4ade80,transparent);
+    filter:blur(140px);
+    top:-200px;
+    left:-200px;
+    opacity:0.15;
+    animation:float 10s infinite ease-in-out;
     z-index:-1;
 }
 
-.blob{
-    position:absolute;
-    width:500px;
-    height:500px;
-    background:radial-gradient(circle,#4ade80,transparent);
-    filter:blur(140px);
-    opacity:0.18;
+@keyframes float{
+    0%{transform:translate(0,0);}
+    50%{transform:translate(40px,30px);}
+    100%{transform:translate(0,0);}
 }
 
-/* ================= LAYOUT ================= */
-.app{
-    display:flex;
-    height:100vh;
-}
-
-/* ================= SIDEBAR ================= */
-.sidebar{
-    width:260px;
-    background:rgba(255,255,255,0.03);
-    border-right:1px solid rgba(255,255,255,0.06);
-    backdrop-filter:blur(20px);
-    padding:20px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-}
-
-.brand{
-    font-size:18px;
-    font-weight:bold;
-    color:#4ade80;
-    margin-bottom:10px;
-}
-
-/* nav items */
-.navItem{
-    padding:10px;
-    border-radius:10px;
-    cursor:pointer;
-    color:#aaa;
-    transition:0.2s;
-    border:1px solid transparent;
-}
-
-.navItem:hover{
-    background:rgba(255,255,255,0.04);
-    color:white;
-}
-
-.navItem.active{
-    background:rgba(74,222,128,0.1);
-    border:1px solid rgba(74,222,128,0.3);
-    color:#4ade80;
-}
-
-/* ================= MAIN ================= */
-.main{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-}
-
-/* TOP BAR */
-.topbar{
-    padding:15px 25px;
-    border-bottom:1px solid rgba(255,255,255,0.06);
+/* ================= NAV ================= */
+.nav{
     display:flex;
     justify-content:space-between;
     align-items:center;
+    padding:20px 40px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    backdrop-filter:blur(12px);
 }
 
-.status{
-    font-size:12px;
+.logo{
+    font-weight:bold;
+    color:#4ade80;
+    font-size:18px;
+    letter-spacing:0.5px;
+}
+
+.nav button{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.1);
+    color:white;
+    padding:8px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.nav button:hover{
+    border-color:#4ade80;
+    transform:scale(1.05);
+}
+
+/* ================= HERO ================= */
+.hero{
+    text-align:center;
+    padding:80px 20px 40px 20px;
+}
+
+.hero h1{
+    font-size:52px;
+    margin-bottom:10px;
+    background:linear-gradient(90deg,#4ade80,#facc15);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation:fadeIn 1s ease-in;
+}
+
+.hero p{
+    max-width:750px;
+    margin:auto;
     color:#aaa;
+    line-height:1.6;
+    animation:fadeIn 1.2s ease-in;
 }
 
-/* ================= TOOL AREA ================= */
-.content{
-    padding:25px;
-    overflow:auto;
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
 }
 
-/* TOOL PANELS */
-.panel{
+/* ================= SECTIONS ================= */
+.section{
+    width:90%;
+    max-width:1100px;
+    margin:auto;
+    margin-top:60px;
+}
+
+/* TOOL GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;
+}
+
+/* TOOL CARD */
+.card{
     background:rgba(255,255,255,0.04);
     border:1px solid rgba(255,255,255,0.08);
     border-radius:16px;
     padding:20px;
-    backdrop-filter:blur(18px);
-    margin-bottom:20px;
+    backdrop-filter:blur(14px);
+    transition:0.25s;
+    cursor:pointer;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    border-color:rgba(74,222,128,0.35);
+    box-shadow:0 15px 40px rgba(0,0,0,0.5);
+}
+
+.card h3{
+    color:#4ade80;
+}
+
+/* ACTIVE TOOL GLOW */
+.card.active{
+    border-color:#4ade80;
+    box-shadow:0 0 20px rgba(74,222,128,0.2);
+}
+
+/* PANEL */
+.panel{
+    margin-top:20px;
+    padding:20px;
+    background:rgba(255,255,255,0.04);
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(14px);
 }
 
 /* INPUTS */
@@ -123,43 +156,40 @@ textarea,input{
     border:1px solid rgba(255,255,255,0.1);
     color:white;
     border-radius:10px;
+    outline:none;
 }
 
-/* BUTTON */
-button{
+/* RUN BUTTON */
+button.run{
     margin-top:10px;
-    background:rgba(74,222,128,0.12);
+    background:rgba(74,222,128,0.15);
     border:1px solid rgba(74,222,128,0.4);
     color:#4ade80;
-    padding:10px 14px;
+    padding:10px 16px;
     border-radius:10px;
     cursor:pointer;
+    transition:0.2s;
 }
 
-/* TOOL VIEWS */
-.view{
-    display:none;
+button.run:hover{
+    transform:scale(1.03);
+    box-shadow:0 0 15px rgba(74,222,128,0.2);
 }
 
-.view.active{
-    display:block;
-}
-
-/* LOGS */
-.logs{
-    height:220px;
-    overflow:auto;
-    background:rgba(0,0,0,0.35);
-    padding:10px;
-    font-family:monospace;
-    font-size:12px;
-    border-radius:10px;
+/* STATUS */
+.statusbar{
+    display:flex;
+    justify-content:space-between;
+    margin-top:10px;
+    font-size:13px;
+    color:#aaa;
 }
 
 /* PROGRESS */
 .progress{
+    width:100%;
     height:10px;
-    background:rgba(255,255,255,0.08);
+    background:rgba(255,255,255,0.06);
     border-radius:20px;
     overflow:hidden;
     margin-top:10px;
@@ -169,6 +199,35 @@ button{
     height:100%;
     width:0%;
     background:linear-gradient(90deg,#facc15,#4ade80);
+    transition:0.3s;
+    box-shadow:0 0 10px rgba(74,222,128,0.2);
+}
+
+/* LOGS */
+.logs{
+    margin-top:15px;
+    height:220px;
+    overflow:auto;
+    background:rgba(0,0,0,0.35);
+    padding:10px;
+    font-family:monospace;
+    font-size:12px;
+    border-radius:10px;
+}
+
+/* LOG LINE STYLE */
+.logs div{
+    margin:4px 0;
+    color:#bbb;
+}
+
+/* FOOTER */
+footer{
+    text-align:center;
+    color:#555;
+    margin-top:80px;
+    padding:30px;
+    border-top:1px solid rgba(255,255,255,0.05);
 }
 
 </style>
@@ -176,123 +235,103 @@ button{
 
 <body>
 
-<div class="bg">
-    <div class="blob"></div>
+<div class="nav">
+    <div class="logo">🚀 Clipster PRO</div>
+    <button onclick="scrollToTools()">Explore Tools</button>
 </div>
 
-<div class="app">
-
-<!-- ================= SIDEBAR ================= -->
-<div class="sidebar">
-    <div class="brand">🚀 Clipster SaaS</div>
-
-    <div class="navItem active" onclick="switchView('dashboard')">Dashboard</div>
-    <div class="navItem" onclick="switchView('scraper')">Scraper Tool</div>
-    <div class="navItem" onclick="switchView('editor')">Reel Editor</div>
-    <div class="navItem" onclick="switchView('campaigns')">Campaigns</div>
-    <div class="navItem" onclick="switchView('team')">Team Hub</div>
-    <div class="navItem" onclick="switchView('submissions')">Submissions</div>
+<div class="hero">
+    <h1>Automate Your Clipster Workflow</h1>
+    <p>
+        SaaS tool suite for scraping, editing, campaign automation, and team workflow management.
+    </p>
 </div>
 
-<!-- ================= MAIN ================= -->
-<div class="main">
+<div class="section" id="tools">
 
-<div class="topbar">
-    <div>Clipster Workflow System</div>
-    <div class="status" id="status">Ready</div>
+<h2>Tool Suite</h2>
+
+<div class="grid">
+
+<div class="card active" onclick="selectTool(this,'scraper')">
+<h3>Instagram Scraper</h3>
+<p>Extract reels from pages with filtering.</p>
 </div>
 
-<div class="content">
-
-<!-- ================= DASHBOARD ================= -->
-<div id="dashboard" class="view active">
-    <div class="panel">
-        <h2>Welcome to Clipster SaaS</h2>
-        <p>Manage scraping, editing, campaigns, team workflow and submissions from one system.</p>
-    </div>
+<div class="card" onclick="selectTool(this,'editor')">
+<h3>Reel Editor</h3>
+<p>Crop gameplay, add overlays, change backgrounds.</p>
 </div>
 
-<!-- ================= SCRAPER ================= -->
-<div id="scraper" class="view">
+<div class="card">
+<h3>Campaign Manager</h3>
+<p>Match reels with campaign requirements.</p>
+</div>
+
+<div class="card">
+<h3>Team Hub</h3>
+<p>Track teammates, submissions, earnings.</p>
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<h2>Workspace</h2>
 
 <div class="panel">
-<h3>Instagram Scraper</h3>
+
+<h3 id="toolTitle">Active Tool: Scraper</h3>
 
 <textarea id="pages" placeholder="Enter Instagram pages"></textarea>
+
 <br><br>
 
 <input id="limit" value="10">
 
-<button onclick="startTask()">Run Scraper</button>
+<button class="run" onclick="startTask()">Run Tool</button>
+
+<div class="statusbar">
+<span id="status">Idle</span>
+<span id="taskid"></span>
+</div>
 
 <div class="progress">
 <div class="fill" id="progress"></div>
 </div>
 
-</div>
-
-<div class="panel">
-<h3>Live Logs</h3>
 <div class="logs" id="logs"></div>
-</div>
 
 </div>
 
-<!-- ================= EDITOR ================= -->
-<div id="editor" class="view">
-<div class="panel">
-<h3>Reel Editor (UI Placeholder)</h3>
-<p>Crop gameplay, add overlays, change backgrounds (coming next).</p>
-</div>
 </div>
 
-<!-- ================= CAMPAIGNS ================= -->
-<div id="campaigns" class="view">
-<div class="panel">
-<h3>Campaign Manager</h3>
-<p>Auto match reels with campaign rules.</p>
-</div>
-</div>
-
-<!-- ================= TEAM ================= -->
-<div id="team" class="view">
-<div class="panel">
-<h3>Team Hub</h3>
-<p>Track members, earnings, submissions (future SaaS layer).</p>
-</div>
-</div>
-
-<!-- ================= SUBMISSIONS ================= -->
-<div id="submissions" class="view">
-<div class="panel">
-<h3>Submissions</h3>
-<p>Auto submission system will appear here.</p>
-</div>
-</div>
-
-</div>
-</div>
+<footer>
+Clipster PRO SaaS Suite • Automation Engine
+</footer>
 
 <script>
 
 let currentTask=null;
 
-/* ================= VIEW SWITCH ================= */
-function switchView(id){
-
-document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-
-document.querySelectorAll(".navItem").forEach(n=>n.classList.remove("active"));
-event.target.classList.add("active");
+function scrollToTools(){
+document.getElementById("tools").scrollIntoView({behavior:"smooth"});
 }
 
-/* ================= START TASK ================= */
+function selectTool(el,name){
+
+document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));
+el.classList.add("active");
+
+document.getElementById("toolTitle").innerText="Active Tool: "+name;
+}
+
 async function startTask(){
 
 document.getElementById("logs").innerHTML="";
 document.getElementById("progress").style.width="0%";
-
 document.getElementById("status").innerText="Running...";
 
 let pages=document.getElementById("pages").value.split("\n").filter(x=>x.trim());
@@ -312,7 +351,6 @@ log("Task started: "+currentTask);
 poll();
 }
 
-/* ================= POLL ================= */
 async function poll(){
 
 if(!currentTask)return;
@@ -331,7 +369,6 @@ document.getElementById("status").innerText="Done";
 }
 }
 
-/* ================= LOG ================= */
 function log(m){
 let box=document.getElementById("logs");
 let d=document.createElement("div");
