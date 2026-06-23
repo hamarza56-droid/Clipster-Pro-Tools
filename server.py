@@ -7,7 +7,8 @@ import threading
 from database import *
 
 app = Flask(__name__)
-app.secret_key = "clipster_secret_key_123"
+import secrets
+app.secret_key = secrets.token_hex(32)
 
 init_db()
 
