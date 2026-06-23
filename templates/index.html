@@ -70,7 +70,7 @@ body{
     border:1px solid rgba(255,255,255,0.1);
 }
 
-/* ================= SIDEBAR (HIDDEN DEFAULT) ================= */
+/* ================= SIDEBAR ================= */
 .sidebar{
     position:fixed;
     top:0;
@@ -85,9 +85,7 @@ body{
     z-index:999;
 }
 
-.sidebar.active{
-    left:0;
-}
+.sidebar.active{ left:0; }
 
 .sidebar h3{
     color:#4ade80;
@@ -126,6 +124,28 @@ body{
     line-height:1.6;
 }
 
+/* ================= STATS ================= */
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:15px;
+    width:90%;
+    max-width:1100px;
+    margin:40px auto;
+}
+
+.stat{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:16px;
+    border-radius:14px;
+}
+
+.stat b{
+    color:#4ade80;
+    font-size:20px;
+}
+
 /* ================= CAMPAIGNS ================= */
 .section{
     width:90%;
@@ -134,7 +154,7 @@ body{
     margin-top:60px;
 }
 
-/* MARQUEE STYLE */
+/* MARQUEE */
 .marquee{
     overflow:hidden;
     white-space:nowrap;
@@ -146,6 +166,10 @@ body{
     animation:move 18s linear infinite;
 }
 
+.track.reverse{
+    animation-direction:reverse;
+}
+
 @keyframes move{
     from{transform:translateX(100%);}
     to{transform:translateX(-100%);}
@@ -153,7 +177,7 @@ body{
 
 .campaign{
     display:inline-block;
-    min-width:240px;
+    min-width:260px;
     background:rgba(255,255,255,0.05);
     border:1px solid rgba(255,255,255,0.08);
     padding:14px;
@@ -166,9 +190,20 @@ body{
     display:block;
 }
 
+.badge{
+    display:inline-block;
+    background:rgba(74,222,128,0.15);
+    color:#4ade80;
+    padding:2px 8px;
+    border-radius:6px;
+    font-size:11px;
+    margin-top:5px;
+}
+
 .campaign small{
     color:#aaa;
     font-size:11px;
+    display:block;
 }
 
 /* ================= CARDS ================= */
@@ -183,37 +218,36 @@ body{
     border:1px solid rgba(255,255,255,0.08);
     padding:20px;
     border-radius:16px;
+    cursor:pointer;
 }
 
 .card h3{
     color:#4ade80;
 }
 
-/* ================= WORKSPACE ================= */
-.panel{
-    margin-top:20px;
-    padding:20px;
+/* ================= ACTIVITY FEED ================= */
+.feed{
     background:rgba(255,255,255,0.04);
-    border-radius:16px;
     border:1px solid rgba(255,255,255,0.08);
+    padding:16px;
+    border-radius:14px;
+    margin-top:20px;
 }
 
-textarea,input{
-    width:100%;
-    padding:12px;
-    border-radius:10px;
-    background:rgba(0,0,0,0.4);
-    border:1px solid rgba(255,255,255,0.1);
-    color:white;
+.feed div{
+    padding:8px 0;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    font-size:13px;
+    color:#bbb;
 }
 
-button{
-    margin-top:10px;
-    background:#4ade80;
-    border:none;
-    padding:10px 14px;
-    border-radius:10px;
-    cursor:pointer;
+/* ================= FOOTER ================= */
+footer{
+    text-align:center;
+    color:#666;
+    margin-top:80px;
+    padding:30px;
+    border-top:1px solid rgba(255,255,255,0.05);
 }
 
 </style>
@@ -226,7 +260,7 @@ button{
     <div class="blob blob2"></div>
 </div>
 
-<!-- SIDEBAR (HIDDEN) -->
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
     <h3>🚀 Clipster</h3>
     <div>Dashboard</div>
@@ -249,9 +283,16 @@ button{
     <p>SaaS automation system for scraping, campaign matching, reel processing and team workflow.</p>
 </div>
 
-<!-- ACTIVE CAMPAIGNS -->
-<div class="section">
+<!-- DASHBOARD STATS -->
+<div class="stats">
+    <div class="stat"><b>12</b><br>Active Campaigns</div>
+    <div class="stat"><b>8</b><br>Team Members</div>
+    <div class="stat"><b>145</b><br>Submissions</div>
+    <div class="stat"><b>$2,430</b><br>Revenue</div>
+</div>
 
+<!-- ACTIVE CAMPAIGNS ROW 1 -->
+<div class="section">
 <h3>🔥 Active Campaigns</h3>
 
 <div class="marquee">
@@ -259,74 +300,114 @@ button{
 
 <div class="campaign">
 <b>cs2skin.com</b>
-<small>CS2 Campaign</small>
+<span class="badge">CS2</span>
+<small>Reward: $0.80</small>
 <small>Upload CS2 gameplay with logo</small>
 </div>
 
 <div class="campaign">
 <b>hellcase</b>
-<small>Case Opening</small>
+<span class="badge">CASE</span>
+<small>Reward: $0.65</small>
 <small>Promote case opening reels</small>
 </div>
 
 <div class="campaign">
 <b>tradeit.gg</b>
-<small>Trading</small>
+<span class="badge">TRADE</span>
+<small>Reward: $0.90</small>
 <small>CS2 trading highlights required</small>
 </div>
 
 </div>
 </div>
-
 </div>
 
-<!-- TOOLS -->
+<!-- ACTIVE CAMPAIGNS ROW 2 -->
 <div class="section">
 
+<div class="marquee">
+<div class="track reverse">
+
+<div class="campaign">
+<b>skin.club</b>
+<span class="badge">SKINS</span>
+<small>Reward: $1.10</small>
+<small>High-quality CS2 montage clips</small>
+</div>
+
+<div class="campaign">
+<b>csgoempire</b>
+<span class="badge">GAMBLE</span>
+<small>Reward: $1.25</small>
+<small>Casino style CS2 content</small>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- LIVE ACTIVITY -->
+<div class="section">
+<h3>📡 Live Activity Feed</h3>
+
+<div class="feed">
+<div>Hamza submitted Hellcase reel</div>
+<div>Ali joined cs2skin campaign</div>
+<div>Ahmed earned $12.50</div>
+<div>Tradeit.gg campaign updated</div>
+<div>5 reels approved automatically</div>
+</div>
+</div>
+
+<!-- TOOL SUITE -->
+<div class="section">
 <h3>Tool Suite</h3>
 
 <div class="grid">
 
-<div class="card">
+<div class="card" onclick="location.href='/scraper'">
 <h3>Instagram Scraper</h3>
-<p>Extract reels from Instagram pages.</p>
 </div>
 
-<div class="card">
+<div class="card" onclick="location.href='/editor'">
 <h3>Reel Editor</h3>
-<p>Crop gameplay + add overlays.</p>
 </div>
 
-<div class="card">
+<div class="card" onclick="location.href='/campaign-manager'">
 <h3>Campaign Manager</h3>
-<p>Auto rule matching system.</p>
+</div>
+
+<div class="card" onclick="location.href='/team-hub'">
+<h3>Team Hub</h3>
+</div>
+
+</div>
+</div>
+
+<!-- UPCOMING CAMPAIGNS -->
+<div class="section">
+<h3>⏳ Upcoming Campaigns</h3>
+
+<div class="grid">
+
+<div class="card">
+<h3>lootbear</h3>
+<p>CS2 skin giveaway campaigns starting soon</p>
 </div>
 
 <div class="card">
-<h3>Team Hub</h3>
-<p>Track team activity & earnings.</p>
+<h3>buff163</h3>
+<p>Trading automation partnership incoming</p>
 </div>
 
 </div>
-
 </div>
 
-<!-- WORKSPACE -->
-<div class="section">
-
-<h3>Workspace</h3>
-
-<div class="panel">
-
-<textarea placeholder="Instagram pages"></textarea>
-<br><br>
-<input value="10">
-<br>
-<button>Run Tool</button>
-
-</div>
-
-</div>
+<!-- FOOTER -->
+<footer>
+Clipster PRO SaaS Suite • Built for automation of Clipster.gg workflows
+</footer>
 
 <script>
 
