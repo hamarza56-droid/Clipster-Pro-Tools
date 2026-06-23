@@ -185,8 +185,8 @@ async function submitForm(){
         return;
     }
 
-    if(data.api_key){
-        localStorage.setItem("api_key", data.api_key);
+    if(data.status === "success"){
+        localStorage.setItem("role", data.role);
 
         // SaaS redirect logic (future: /dashboard)
         window.location.href = "/";
