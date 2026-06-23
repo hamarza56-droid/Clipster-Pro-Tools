@@ -51,6 +51,16 @@ body{
     100%{transform:translate(0,0);}
 }
 
+body:before{
+    content:"";
+    position:fixed;
+    width:100%;
+    height:100%;
+    background:url('https://grainy-gradients.vercel.app/noise.svg');
+    opacity:0.04;
+    pointer-events:none;
+}
+
 /* ================= NAV ================= */
 .nav{
     display:flex;
@@ -85,31 +95,50 @@ body{
 
 .hero h1{
     font-size:56px;
-    margin-bottom:10px;
     background:linear-gradient(90deg,#4ade80,#facc15,#4ade80);
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
 }
 
-.hero p{
-    max-width:750px;
-    margin:auto;
-    color:#b5b5b5;
-    line-height:1.7;
+/* ================= CAMPAIGN TICKER (NEW) ================= */
+.ticker-wrap{
+    margin-top:30px;
+    overflow:hidden;
+    white-space:nowrap;
 }
 
-/* ================= CTA ================= */
-.cta button{
-    margin:8px;
-    background:rgba(74,222,128,0.12);
-    border:1px solid rgba(74,222,128,0.35);
+.ticker{
+    display:inline-block;
+    animation:scroll 18s linear infinite;
+}
+
+@keyframes scroll{
+    from{transform:translateX(100%);}
+    to{transform:translateX(-100%);}
+}
+
+.campaign{
+    display:inline-block;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:10px 16px;
+    border-radius:12px;
+    margin-right:12px;
+    min-width:220px;
+}
+
+.campaign b{
     color:#4ade80;
-    padding:12px 18px;
-    border-radius:14px;
-    cursor:pointer;
+    font-size:13px;
 }
 
-/* ================= SECTIONS ================= */
+.campaign small{
+    color:#aaa;
+    display:block;
+    font-size:11px;
+}
+
+/* ================= TOOL GRID ================= */
 .section{
     width:90%;
     max-width:1100px;
@@ -117,7 +146,6 @@ body{
     margin-top:70px;
 }
 
-/* ================= TOOL GRID ================= */
 .grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
@@ -129,116 +157,18 @@ body{
     border:1px solid rgba(255,255,255,0.08);
     border-radius:18px;
     padding:22px;
-    backdrop-filter:blur(18px);
 }
 
-.card h3{
-    color:#4ade80;
-}
-
-/* ================= CAMPAIGNS ================= */
-
-.campaign-wrap{
-    overflow:hidden;
-    margin-top:20px;
-}
-
-.campaign-track{
-    display:flex;
-    gap:20px;
-    width:max-content;
-    animation:scroll 18s linear infinite;
-}
-
-@keyframes scroll{
-    0%{transform:translateX(0);}
-    100%{transform:translateX(-50%);}
-}
-
-.campaign{
-    min-width:260px;
-    background:rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.08);
-    border-radius:14px;
-    padding:16px;
-}
-
-.campaign b{
-    color:#4ade80;
-    display:block;
-}
-
-.tag{
-    font-size:10px;
-    padding:3px 8px;
-    border-radius:20px;
-    background:rgba(250,204,21,0.15);
-    color:#facc15;
-}
-
-/* ================= PANEL ================= */
-.panel{
-    margin-top:20px;
-    padding:22px;
+/* ================= WORKSPACE NOTICE ================= */
+.workspace-note{
     background:rgba(255,255,255,0.04);
-    border-radius:18px;
+    padding:15px;
+    border-radius:12px;
     border:1px solid rgba(255,255,255,0.08);
+    color:#aaa;
+    font-size:13px;
 }
 
-textarea,input{
-    width:100%;
-    padding:12px;
-    background:rgba(0,0,0,0.35);
-    border:1px solid rgba(255,255,255,0.1);
-    color:white;
-    border-radius:12px;
-}
-
-button.run{
-    margin-top:12px;
-    background:rgba(74,222,128,0.15);
-    border:1px solid rgba(74,222,128,0.4);
-    color:#4ade80;
-    padding:11px 16px;
-    border-radius:12px;
-    cursor:pointer;
-}
-
-/* ================= PROGRESS ================= */
-.progress{
-    width:100%;
-    height:10px;
-    background:rgba(255,255,255,0.08);
-    border-radius:20px;
-    overflow:hidden;
-    margin-top:12px;
-}
-
-.fill{
-    height:100%;
-    width:0%;
-    background:linear-gradient(90deg,#facc15,#4ade80);
-}
-
-/* ================= LOGS ================= */
-.logs{
-    margin-top:15px;
-    height:240px;
-    overflow:auto;
-    background:rgba(0,0,0,0.35);
-    padding:12px;
-    font-family:monospace;
-    font-size:12px;
-    border-radius:12px;
-}
-
-/* ================= FOOTER ================= */
-footer{
-    text-align:center;
-    color:#666;
-    margin-top:90px;
-    padding:30px;
-}
 </style>
 </head>
 
@@ -249,55 +179,46 @@ footer{
     <div class="blob blob2"></div>
 </div>
 
-<!-- NAV -->
 <div class="nav">
     <div class="logo">🚀 Clipster PRO</div>
-    <button onclick="scrollToTools()">Explore Tools</button>
+    <button>Dashboard</button>
 </div>
 
-<!-- HERO -->
 <div class="hero">
-    <h1>Automate Your Clipster Workflow</h1>
-    <p>SaaS automation suite for Instagram scraping, campaign matching, and team workflow intelligence.</p>
+    <h1>Automate Clipster Workflow</h1>
 
-    <div class="cta">
-        <button onclick="scrollToTools()">Start Using Tools</button>
+    <p style="color:#aaa;max-width:700px;margin:auto;">
+        Campaign automation, reel processing, scraping and team workflow system.
+    </p>
+
+    <!-- ================= ACTIVE CAMPAIGNS (NEW FEATURE) ================= -->
+    <div class="ticker-wrap">
+        <div class="ticker">
+
+            <div class="campaign">
+                <b>CS2SKIN.COM</b>
+                <small>CS2 Campaign</small>
+                <small>Upload CS2 gameplay with logo overlay</small>
+            </div>
+
+            <div class="campaign">
+                <b>HELLCASE</b>
+                <small>CS2 Campaign</small>
+                <small>Case opening reels required</small>
+            </div>
+
+            <div class="campaign">
+                <b>TRADEIT.GG</b>
+                <small>Trading Campaign</small>
+                <small>Market highlight content</small>
+            </div>
+
+        </div>
     </div>
 </div>
 
-<!-- ================= CAMPAIGNS (NEW) ================= -->
+<!-- ================= TOOLS ================= -->
 <div class="section">
-
-<h2>Active Campaigns</h2>
-
-<div class="campaign-wrap">
-<div class="campaign-track">
-
-    <div class="campaign">
-        <b>cs2skin.com</b>
-        <span class="tag">CS2</span>
-        <p>Upload CS2 gameplay with CS2Skin logo integration</p>
-    </div>
-
-    <div class="campaign">
-        <b>hellcase</b>
-        <span class="tag">CS2</span>
-        <p>Case opening reels with Hellcase branding</p>
-    </div>
-
-    <div class="campaign">
-        <b>tradeit.gg</b>
-        <span class="tag">TRADING</span>
-        <p>Trading highlight clips with promo content</p>
-    </div>
-
-</div>
-</div>
-
-</div>
-
-<!-- ================= TOOL GRID ================= -->
-<div class="section" id="tools">
 
 <h2>Tool Suite</h2>
 
@@ -305,66 +226,55 @@ footer{
 
 <div class="card">
 <h3>Instagram Scraper</h3>
-<p>Extract reels with automation filtering engine.</p>
+<p>Extract reels from pages.</p>
 </div>
 
 <div class="card">
 <h3>Reel Editor</h3>
-<p>Crop gameplay, overlay logos, change backgrounds.</p>
+<p>Crop + background replacement.</p>
 </div>
 
 <div class="card">
 <h3>Campaign Manager</h3>
-<p>Rule-based matching system for campaign detection.</p>
+<p>Rule-based content matching system.</p>
 </div>
 
 <div class="card">
 <h3>Team Hub</h3>
-<p>Track teammates, earnings and submissions.</p>
+<p>Track users, earnings, submissions.</p>
 </div>
 
 </div>
+
 </div>
 
-<!-- ================= WORKSPACE ================= -->
+<!-- ================= CAMPAIGN MANAGER SECTION (NEW) ================= -->
 <div class="section">
 
-<h2>Workspace (Core Tool Engine)</h2>
+<h2>Campaign Manager</h2>
 
-<div class="panel">
-
-<h3>Run Scraper Tool</h3>
-
-<textarea placeholder="Instagram pages"></textarea>
-
+<div class="workspace-note">
+This system automatically validates reels against campaign rules:
 <br><br>
-
-<input value="10">
-
-<button class="run">Run Tool</button>
-
-<div class="progress">
-<div class="fill"></div>
-</div>
-
-<div class="logs"></div>
-
+✔ Detect logo presence<br>
+✔ Check campaign keyword match<br>
+✔ Auto approve/reject submissions<br>
+✔ Track per-team performance
 </div>
 
 </div>
 
-<!-- FOOTER -->
-<footer>
-Clipster PRO SaaS Suite • Automation system for Clipster.gg workflows
-</footer>
+<!-- ================= WORKSPACE MOVED INFO ================= -->
+<div class="section">
 
-<script>
+<h2>Workspace</h2>
 
-function scrollToTools(){
-document.getElementById("tools").scrollIntoView({behavior:"smooth"});
-}
+<div class="workspace-note">
+⚠ Workspace tool will be moved to a separate page ( /workspace )  
+to keep SaaS structure clean and scalable.
+</div>
 
-</script>
+</div>
 
 </body>
 </html>
