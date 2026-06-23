@@ -70,6 +70,40 @@ body{
     border:1px solid rgba(255,255,255,0.1);
 }
 
+/* ================= SIDEBAR ================= */
+.sidebar{
+    position:fixed;
+    top:0;
+    left:-260px;
+    width:240px;
+    height:100%;
+    background:rgba(0,0,0,0.85);
+    backdrop-filter:blur(18px);
+    border-right:1px solid rgba(255,255,255,0.08);
+    padding:20px;
+    transition:0.3s ease;
+    z-index:999;
+}
+
+.sidebar.active{ left:0; }
+
+.sidebar h3{
+    color:#4ade80;
+    margin-bottom:15px;
+}
+
+.sidebar div{
+    padding:10px;
+    color:#aaa;
+    cursor:pointer;
+    border-radius:8px;
+}
+
+.sidebar div:hover{
+    background:rgba(74,222,128,0.1);
+    color:white;
+}
+
 /* ================= HERO ================= */
 .hero{
     text-align:center;
@@ -123,6 +157,7 @@ body{
 .marquee{
     overflow:hidden;
     white-space:nowrap;
+    margin-top:20px;
 }
 
 .track{
@@ -139,6 +174,7 @@ body{
     to{transform:translateX(-100%);}
 }
 
+/* ================= CAMPAIGN CARD ================= */
 .campaign{
     display:inline-block;
     min-width:260px;
@@ -149,34 +185,29 @@ body{
     margin-right:12px;
 }
 
-.campaign b{ color:#4ade80; display:block; }
+.campaign b{
+    color:#4ade80;
+    display:block;
+}
 
 .badge{
-    font-size:11px;
-    padding:2px 8px;
+    display:inline-block;
     background:rgba(74,222,128,0.15);
     color:#4ade80;
+    padding:2px 8px;
     border-radius:6px;
+    font-size:11px;
+    margin-top:5px;
 }
 
-small{ color:#aaa; display:block; font-size:11px; }
-
-/* ================= FEED ================= */
-.feed{
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(255,255,255,0.08);
-    padding:16px;
-    border-radius:14px;
+.campaign small{
+    color:#aaa;
+    font-size:11px;
+    display:block;
 }
 
-.feed div{
-    padding:8px 0;
-    border-bottom:1px solid rgba(255,255,255,0.05);
-    font-size:13px;
-    color:#bbb;
-}
-
-.card-grid{
+/* ================= GRID ================= */
+.grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
     gap:20px;
@@ -185,9 +216,29 @@ small{ color:#aaa; display:block; font-size:11px; }
 .card{
     background:rgba(255,255,255,0.04);
     border:1px solid rgba(255,255,255,0.08);
-    padding:18px;
-    border-radius:14px;
+    padding:20px;
+    border-radius:16px;
     cursor:pointer;
+}
+
+.card h3{
+    color:#4ade80;
+}
+
+/* ================= FEED ================= */
+.feed{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:16px;
+    border-radius:14px;
+    margin-top:20px;
+}
+
+.feed div{
+    padding:8px 0;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    font-size:13px;
+    color:#bbb;
 }
 
 /* ================= FOOTER ================= */
@@ -209,124 +260,148 @@ footer{
     <div class="blob blob2"></div>
 </div>
 
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <h3>🚀 Clipster</h3>
+    <div>Dashboard</div>
+    <div>Campaigns</div>
+    <div>Campaign Manager</div>
+    <div>Team Hub</div>
+    <div>Submissions</div>
+    <div>Settings</div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">Clipster PRO</div>
+    <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+</div>
+
 <!-- HERO -->
 <div class="hero">
     <h1>Automate Your Clipster Workflow</h1>
-    <p>Live SaaS dashboard for campaigns, scraping, automation and team earnings.</p>
+    <p>SaaS automation system for scraping, campaign matching, reel processing and team workflow.</p>
 </div>
 
-<!-- DASHBOARD STATS (REAL DATA) -->
+<!-- STATS (SAFE STATIC - CAN BE CONNECTED LATER) -->
 <div class="stats">
-    <div class="stat"><b id="activeCampaigns">--</b><br>Active Campaigns</div>
-    <div class="stat"><b id="teamMembers">--</b><br>Team Members</div>
-    <div class="stat"><b id="submissions">--</b><br>Submissions Today</div>
-    <div class="stat"><b id="revenue">--</b><br>Revenue</div>
+    <div class="stat"><b>12</b><br>Active Campaigns</div>
+    <div class="stat"><b>8</b><br>Team Members</div>
+    <div class="stat"><b>145</b><br>Submissions</div>
+    <div class="stat"><b>$2,430</b><br>Revenue</div>
 </div>
 
 <!-- ACTIVE CAMPAIGNS ROW 1 -->
 <div class="section">
 <h3>🔥 Active Campaigns</h3>
-<div class="marquee"><div class="track" id="row1"></div></div>
+
+<div class="marquee">
+<div class="track">
+
+<div class="campaign">
+<b>cs2skin.com</b>
+<span class="badge">CS2</span>
+<small>Reward: $0.80</small>
+<small>Upload CS2 gameplay with logo</small>
+</div>
+
+<div class="campaign">
+<b>hellcase</b>
+<span class="badge">CASE</span>
+<small>Reward: $0.65</small>
+<small>Promote case opening reels</small>
+</div>
+
+<div class="campaign">
+<b>tradeit.gg</b>
+<span class="badge">TRADE</span>
+<small>Reward: $0.90</small>
+<small>CS2 trading highlights required</small>
+</div>
+
+</div>
+</div>
 </div>
 
 <!-- ACTIVE CAMPAIGNS ROW 2 -->
 <div class="section">
-<div class="marquee"><div class="track reverse" id="row2"></div></div>
+<div class="marquee">
+<div class="track reverse">
+
+<div class="campaign">
+<b>skin.club</b>
+<span class="badge">SKINS</span>
+<small>Reward: $1.10</small>
+<small>High-quality CS2 montage clips</small>
+</div>
+
+<div class="campaign">
+<b>csgoempire</b>
+<span class="badge">GAMBLE</span>
+<small>Reward: $1.25</small>
+<small>Casino-style CS2 content</small>
+</div>
+
+</div>
+</div>
 </div>
 
 <!-- LIVE ACTIVITY -->
 <div class="section">
 <h3>📡 Live Activity Feed</h3>
-<div class="feed" id="feed"></div>
+
+<div class="feed">
+<div>Hamza submitted Hellcase reel</div>
+<div>Ali joined cs2skin campaign</div>
+<div>Ahmed earned $12.50</div>
+<div>Tradeit.gg campaign updated</div>
+<div>5 reels approved automatically</div>
+</div>
 </div>
 
 <!-- TOOL SUITE -->
 <div class="section">
 <h3>Tool Suite</h3>
-<div class="card-grid">
 
-<div class="card" onclick="location.href='/scraper'">Instagram Scraper</div>
-<div class="card" onclick="location.href='/editor'">Reel Editor</div>
-<div class="card" onclick="location.href='/campaign-manager'">Campaign Manager</div>
-<div class="card" onclick="location.href='/team-hub'">Team Hub</div>
+<div class="grid">
+
+<div class="card" onclick="location.href='/scraper'"><h3>Instagram Scraper</h3></div>
+<div class="card" onclick="location.href='/editor'"><h3>Reel Editor</h3></div>
+<div class="card" onclick="location.href='/campaign-manager'"><h3>Campaign Manager</h3></div>
+<div class="card" onclick="location.href='/team-hub'"><h3>Team Hub</h3></div>
 
 </div>
 </div>
 
-<!-- UPCOMING -->
+<!-- UPCOMING CAMPAIGNS -->
 <div class="section">
 <h3>⏳ Upcoming Campaigns</h3>
-<div class="card-grid" id="upcoming"></div>
+
+<div class="grid">
+
+<div class="card">
+<h3>lootbear</h3>
+<p>CS2 skin giveaway campaigns starting soon</p>
 </div>
 
+<div class="card">
+<h3>buff163</h3>
+<p>Trading automation partnership incoming</p>
+</div>
+
+</div>
+</div>
+
+<!-- FOOTER -->
 <footer>
-Clipster PRO • Live SaaS Dashboard System
+Clipster PRO SaaS Suite • Built for automation of Clipster.gg workflows
 </footer>
 
 <script>
 
-/* ================= LOAD DASHBOARD ================= */
-
-async function loadDashboard(){
-
-try {
-    const res = await fetch("/api/dashboard");
-    const data = await res.json();
-
-    // STATS
-    document.getElementById("activeCampaigns").innerText = data.stats.activeCampaigns;
-    document.getElementById("teamMembers").innerText = data.stats.teamMembers;
-    document.getElementById("submissions").innerText = data.stats.submissions;
-    document.getElementById("revenue").innerText = "$" + data.stats.revenue;
-
-    // CAMPAIGNS ROW 1
-    document.getElementById("row1").innerHTML = data.campaigns.map(c=>`
-        <div class="campaign">
-            <b>${c.name}</b>
-            <span class="badge">${c.type}</span>
-            <small>Reward: $${c.reward}</small>
-            <small>${c.description}</small>
-        </div>
-    `).join("");
-
-    // CAMPAIGNS ROW 2
-    document.getElementById("row2").innerHTML = data.campaigns2.map(c=>`
-        <div class="campaign">
-            <b>${c.name}</b>
-            <span class="badge">${c.type}</span>
-            <small>Reward: $${c.reward}</small>
-            <small>${c.description}</small>
-        </div>
-    `).join("");
-
-    // FEED
-    document.getElementById("feed").innerHTML = data.activity.map(a=>`
-        <div>${a}</div>
-    `).join("");
-
-    // UPCOMING
-    document.getElementById("upcoming").innerHTML = data.upcoming.map(u=>`
-        <div class="card">
-            <b>${u.name}</b>
-            <p>${u.description}</p>
-        </div>
-    `).join("");
-
-} catch(err){
-    console.log("API not ready yet, using fallback");
-
-    document.getElementById("activeCampaigns").innerText = 12;
-    document.getElementById("teamMembers").innerText = 8;
-    document.getElementById("submissions").innerText = 145;
-    document.getElementById("revenue").innerText = "$2430";
+function toggleSidebar(){
+    document.getElementById("sidebar").classList.toggle("active");
 }
-
-}
-
-loadDashboard();
-
-/* refresh every 10 sec */
-setInterval(loadDashboard, 10000);
 
 </script>
 
