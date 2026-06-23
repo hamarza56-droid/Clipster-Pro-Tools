@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template, session, redirect
-import hashlib, time, random, threading, secrets
+import hashlib, time, random, secrets
 from database import *
 
 app = Flask(__name__)
@@ -18,7 +18,8 @@ def generate_api_key():
     return str(random.randint(100000, 999999)) + str(int(time.time()))
 
 def is_admin():
-    return session.get("user") == ADMIN_USERNAME
+    return session.get("role") == "admin"
+
 
 # ================= HOME =================
 
@@ -28,58 +29,67 @@ def home():
         return redirect("/login")
     return render_template("index.html")
 
+
 # ================= LOGIN =================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+
     if request.method == "GET":
         return render_template("login.html")
 
-    data = request.json
+    data = request.get_json()
 
-    user = get_user(
-        data["username"],
-        hash_password(data["password"])
-    )
+    if not data:
+        return jsonify({"status": "fail", "msg": "no data"})
+
+    username = data.get("username")
+    password = data.get("password")
+
+    user = get_user(username, hash_password(password))
 
     if user:
-        session["user"] = user["username"]
 
-        # FIX: safe role fallback
-        role = user.get("role", "user")
-
-        # auto-fix admin
+        # ensure admin consistency
         if user["username"] == ADMIN_USERNAME:
-            role = "admin"
             update_user_role(ADMIN_USERNAME, "admin")
+            user["role"] = "admin"
 
-        session["role"] = role
+        session["user"] = user["username"]
+        session["role"] = user["role"]
 
         return jsonify({
             "status": "success",
-            "role": role
+            "api_key": user["api_key"],
+            "role": user["role"]
         })
 
-    return jsonify({"status": "fail", "msg": "Invalid credentials"})
+    return jsonify({"status": "fail", "msg": "invalid credentials"})
+
 
 # ================= REGISTER =================
 
 @app.route("/register", methods=["POST"])
 def register():
-    data = request.json
 
-    role = "admin" if data["username"] == ADMIN_USERNAME else "user"
+    data = request.get_json()
+
+    username = data.get("username")
+    password = data.get("password")
+
+    role = "admin" if username == ADMIN_USERNAME else "user"
 
     try:
         create_user(
-            data["username"],
-            hash_password(data["password"]),
+            username,
+            hash_password(password),
             generate_api_key(),
             role
         )
         return jsonify({"status": "registered"})
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)})
+
 
 # ================= ADMIN PANEL =================
 
@@ -108,18 +118,20 @@ def set_role():
     if not is_admin():
         return jsonify({"error": "unauthorized"})
 
-    data = request.json
+    data = request.get_json()
+
     update_user_role(data["username"], data["role"])
 
     return jsonify({"status": "updated"})
 
 
-# ================= TASK ENDPOINTS (KEEP SAFE) =================
+# ================= TASKS =================
 
 @app.route("/pending_tasks")
 def pending_tasks():
     if "user" not in session:
         return jsonify([])
+
     return jsonify(get_all_tasks())
 
 
