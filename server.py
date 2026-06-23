@@ -14,14 +14,11 @@ ADMIN_USERNAME = "Kaelrix"
 def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
-
 def generate_api_key():
     return str(random.randint(100000, 999999)) + str(int(time.time()))
 
-
 def is_admin():
     return session.get("user") == ADMIN_USERNAME
-
 
 # ================= HOME =================
 
@@ -30,7 +27,6 @@ def home():
     if "user" not in session:
         return redirect("/login")
     return render_template("index.html")
-
 
 # ================= LOGIN =================
 
@@ -48,15 +44,23 @@ def login():
 
     if user:
         session["user"] = user["username"]
-        session["role"] = user["role"]
+
+        # FIX: safe role fallback
+        role = user.get("role", "user")
+
+        # auto-fix admin
+        if user["username"] == ADMIN_USERNAME:
+            role = "admin"
+            update_user_role(ADMIN_USERNAME, "admin")
+
+        session["role"] = role
 
         return jsonify({
             "status": "success",
-            "role": user["role"]
+            "role": role
         })
 
-    return jsonify({"status": "fail"})
-
+    return jsonify({"status": "fail", "msg": "Invalid credentials"})
 
 # ================= REGISTER =================
 
@@ -76,7 +80,6 @@ def register():
         return jsonify({"status": "registered"})
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)})
-
 
 # ================= ADMIN PANEL =================
 
@@ -109,3 +112,18 @@ def set_role():
     update_user_role(data["username"], data["role"])
 
     return jsonify({"status": "updated"})
+
+
+# ================= TASK ENDPOINTS (KEEP SAFE) =================
+
+@app.route("/pending_tasks")
+def pending_tasks():
+    if "user" not in session:
+        return jsonify([])
+    return jsonify(get_all_tasks())
+
+
+# ================= RUN =================
+
+if __name__ == "__main__":
+    app.run(debug=True)
