@@ -6,7 +6,7 @@
 
 <style>
 
-/* ================= GLOBAL (UNCHANGED CORE) ================= */
+/* ================= GLOBAL ================= */
 body{
     margin:0;
     font-family: Inter, system-ui, Arial;
@@ -15,19 +15,17 @@ body{
     overflow-x:hidden;
 }
 
-/* selection */
 ::selection{
     background:#4ade80;
     color:black;
 }
 
-/* ================= BACKGROUND (UNCHANGED) ================= */
+/* ================= BACKGROUND ================= */
 .bg{
     position:fixed;
     width:100%;
     height:100%;
     z-index:-1;
-    overflow:hidden;
 }
 
 .blob{
@@ -59,7 +57,6 @@ body:before{
     height:100%;
     background:url('https://grainy-gradients.vercel.app/noise.svg');
     opacity:0.04;
-    pointer-events:none;
 }
 
 /* ================= NAV ================= */
@@ -70,31 +67,28 @@ body:before{
     padding:20px 40px;
     border-bottom:1px solid rgba(255,255,255,0.06);
     backdrop-filter:blur(16px);
-    background:rgba(255,255,255,0.02);
 }
 
 .logo{
-    font-weight:700;
     color:#4ade80;
+    font-weight:700;
 }
 
 /* hamburger */
 .menuBtn{
-    cursor:pointer;
     font-size:22px;
-    background:none;
-    border:none;
+    cursor:pointer;
     color:white;
 }
 
-/* ================= SIDEBAR (HIDDEN BY DEFAULT) ================= */
+/* ================= SIDEBAR (HIDDEN) ================= */
 .sidebar{
     position:fixed;
     top:0;
     left:-260px;
     width:260px;
     height:100%;
-    background:rgba(10,15,25,0.95);
+    background:rgba(10,12,18,0.95);
     backdrop-filter:blur(20px);
     border-right:1px solid rgba(255,255,255,0.08);
     padding:20px;
@@ -115,36 +109,29 @@ body:before{
     padding:10px 0;
     color:#aaa;
     text-decoration:none;
-    transition:0.2s;
 }
 
-.sidebar a:hover{
-    color:white;
-}
-
-/* ================= HERO (UNCHANGED) ================= */
+/* ================= HERO ================= */
 .hero{
     text-align:center;
-    padding:90px 20px 40px 20px;
+    padding:80px 20px 30px;
 }
 
 .hero h1{
     font-size:56px;
-    background:linear-gradient(90deg,#4ade80,#facc15,#4ade80);
+    background:linear-gradient(90deg,#4ade80,#facc15);
     -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
 }
 
 .hero p{
     max-width:750px;
     margin:auto;
     color:#b5b5b5;
-    line-height:1.7;
 }
 
-/* ================= ACTIVE CAMPAIGNS TICKER (NEW) ================= */
+/* ================= ACTIVE CAMPAIGNS ================= */
 .ticker{
-    margin-top:20px;
+    margin-top:30px;
     overflow:hidden;
     white-space:nowrap;
     border-top:1px solid rgba(255,255,255,0.05);
@@ -158,88 +145,86 @@ body:before{
 }
 
 @keyframes scroll{
-    from{transform:translateX(100%);}
-    to{transform:translateX(-100%);}
+    0%{transform:translateX(100%);}
+    100%{transform:translateX(-100%);}
 }
 
-.camp{
+.campaign{
     display:inline-block;
     margin:0 40px;
-    padding:10px;
-    border:1px solid rgba(255,255,255,0.1);
+    padding:10px 14px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
     border-radius:12px;
-    background:rgba(255,255,255,0.03);
 }
 
-.camp small{
-    color:#4ade80;
+.campaign small{
+    color:#aaa;
     display:block;
-    font-size:11px;
 }
 
-/* ================= TOOLS ================= */
+/* ================= SECTION ================= */
 .section{
     width:90%;
     max-width:1100px;
     margin:auto;
-    margin-top:70px;
+    margin-top:60px;
 }
 
+/* GRID */
 .grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
     gap:20px;
 }
 
+/* CARD */
 .card{
     background:rgba(255,255,255,0.04);
     border:1px solid rgba(255,255,255,0.08);
-    border-radius:18px;
-    padding:22px;
+    padding:20px;
+    border-radius:16px;
 }
 
-/* ================= WORKSPACE (UNCHANGED BUT CLEAN) ================= */
+.card h3{color:#4ade80;}
+
+/* WORKSPACE */
 .panel{
     margin-top:20px;
-    padding:22px;
+    padding:20px;
     background:rgba(255,255,255,0.04);
-    border-radius:18px;
+    border-radius:16px;
 }
 
-/* inputs */
 textarea,input{
     width:100%;
     padding:12px;
     background:rgba(0,0,0,0.35);
     border:1px solid rgba(255,255,255,0.1);
     color:white;
-    border-radius:12px;
+    border-radius:10px;
 }
 
-/* button */
 button.run{
-    margin-top:12px;
+    margin-top:10px;
+    padding:10px 14px;
+    border-radius:10px;
+    border:1px solid #4ade80;
     background:rgba(74,222,128,0.15);
-    border:1px solid rgba(74,222,128,0.4);
     color:#4ade80;
-    padding:11px 16px;
-    border-radius:12px;
     cursor:pointer;
 }
 
-/* logs */
 .logs{
     margin-top:15px;
-    height:220px;
+    height:200px;
     overflow:auto;
     background:rgba(0,0,0,0.35);
-    padding:12px;
+    padding:10px;
     font-family:monospace;
-    font-size:12px;
-    border-radius:12px;
 }
 
-/* footer */
+/* FOOTER */
 footer{
     text-align:center;
     color:#666;
@@ -250,13 +235,12 @@ footer{
 /* overlay */
 .overlay{
     position:fixed;
+    top:0;left:0;
     width:100%;
     height:100%;
-    background:rgba(0,0,0,0.4);
+    background:rgba(0,0,0,0.5);
     display:none;
-    z-index:998;
 }
-
 .overlay.active{
     display:block;
 }
@@ -266,96 +250,113 @@ footer{
 
 <body>
 
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-<h3>Clipster Menu</h3>
-
-<a href="#">Dashboard</a>
-<a href="#">Scraper Tool</a>
-<a href="#">Reel Editor</a>
-<a href="#">Campaigns</a>
-<a href="#">Campaign Manager</a>
-<a href="#">Team Hub</a>
-<a href="#">Submissions</a>
+    <h3>Clipster SaaS</h3>
+    <a href="#">Dashboard</a>
+    <a href="#">Scraper Tool</a>
+    <a href="#">Reel Editor</a>
+    <a href="#">Campaign Manager</a>
+    <a href="#">Team Hub</a>
+    <a href="#">Submissions</a>
 </div>
-
-<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
 <!-- NAV -->
 <div class="nav">
-    <button class="menuBtn" onclick="toggleSidebar()">☰</button>
     <div class="logo">🚀 Clipster PRO</div>
+    <div class="menuBtn" onclick="toggleSidebar()">☰</div>
 </div>
 
 <!-- HERO -->
 <div class="hero">
-<h1>Automate Your Clipster Workflow</h1>
-<p>SaaS automation suite for Instagram scraping, reel processing, campaign matching, and team management.</p>
+    <h1>Automate Your Clipster Workflow</h1>
+    <p>SaaS system for scraping, editing, campaign matching and team automation.</p>
 </div>
 
-<!-- ACTIVE CAMPAIGNS (NEW IMPORTANT PART) -->
+<!-- ACTIVE CAMPAIGNS (NEW IMPORTANT) -->
 <div class="ticker">
-<div class="track">
+    <div class="track">
 
-<div class="camp">
-CS2SKIN.COM
-<small>CS2 Campaign</small>
-<div style="font-size:11px;color:#aaa;">Upload CS2 gameplay with logo</div>
+        <div class="campaign">
+            cs2skin.com
+            <small>CS2 Campaign</small>
+            <small>Upload CS2 content with logo</small>
+        </div>
+
+        <div class="campaign">
+            hellcase
+            <small>Gaming Campaign</small>
+            <small>Reels with case opening clips</small>
+        </div>
+
+        <div class="campaign">
+            tradeit.gg
+            <small>Trading Campaign</small>
+            <small>Skin trading highlights</small>
+        </div>
+
+    </div>
 </div>
 
-<div class="camp">
-HELLCASE
-<small>Gaming Loot Campaign</small>
-<div style="font-size:11px;color:#aaa;">Reels with case openings</div>
-</div>
-
-<div class="camp">
-TRADEIT.GG
-<small>Trading Campaign</small>
-<div style="font-size:11px;color:#aaa;">Promote trading clips</div>
-</div>
-
-</div>
-</div>
-
-<!-- TOOLS (UNCHANGED STRUCTURE) -->
+<!-- TOOLS -->
 <div class="section">
-<h2>Tool Suite</h2>
+
+<h2>Tools</h2>
 
 <div class="grid">
 
-<div class="card">Instagram Scraper</div>
-<div class="card">Reel Editor</div>
-<div class="card">Campaign Manager</div>
-<div class="card">Team Hub</div>
+<div class="card">
+<h3>Instagram Scraper</h3>
+<p>Extract reels from pages with filters.</p>
+</div>
+
+<div class="card">
+<h3>Reel Editor</h3>
+<p>Crop gameplay, add overlays, backgrounds.</p>
+</div>
+
+<div class="card">
+<h3>Campaign Manager</h3>
+<p>Rule-based matching system for campaigns.</p>
+</div>
+
+<div class="card">
+<h3>Team Hub</h3>
+<p>Track teammates, earnings, submissions.</p>
+</div>
 
 </div>
 </div>
 
-<!-- WORKSPACE (STAYS SAME) -->
+<!-- WORKSPACE (UNCHANGED STRUCTURE) -->
 <div class="section">
+
 <h2>Workspace</h2>
 
 <div class="panel">
 
 <textarea placeholder="pages"></textarea>
+<br><br>
 <input value="10">
 <button class="run">Run Tool</button>
 
 <div class="logs"></div>
 
 </div>
+
 </div>
 
 <footer>
-Clipster PRO • Automation System for Clipster.gg workflows
+Clipster PRO SaaS Suite • Automation Engine
 </footer>
 
 <script>
 
 function toggleSidebar(){
-document.getElementById("sidebar").classList.toggle("active");
-document.getElementById("overlay").classList.toggle("active");
+    document.getElementById("sidebar").classList.toggle("active");
+    document.getElementById("overlay").classList.toggle("active");
 }
 
 </script>
