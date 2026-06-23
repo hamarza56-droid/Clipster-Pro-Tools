@@ -13,17 +13,19 @@ def init_db():
     conn = get_connection()
     cur = conn.cursor()
 
-    # USERS TABLE (FIX FOR LOGIN CRASH)
+    # USERS
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE,
         password TEXT,
-        api_key TEXT
+        api_key TEXT,
+        role TEXT DEFAULT 'user',
+        tools TEXT DEFAULT 'all'
     )
     """)
 
-    # TASKS TABLE (QUEUE + PROGRESS + CANCEL)
+    # TASKS
     cur.execute("""
     CREATE TABLE IF NOT EXISTS tasks (
         task_id TEXT PRIMARY KEY,
@@ -39,7 +41,7 @@ def init_db():
     )
     """)
 
-    # RESULTS TABLE
+    # RESULTS
     cur.execute("""
     CREATE TABLE IF NOT EXISTS results (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,19 +51,33 @@ def init_db():
     )
     """)
 
+    # CAMPAIGNS
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS campaigns (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        reward REAL,
+        platform TEXT,
+        description TEXT,
+        active INTEGER DEFAULT 1
+    )
+    """)
+
     conn.commit()
     conn.close()
 
 
 # ================= USERS =================
 
-def create_user(username, password, api_key):
+def create_user(username, password, api_key, role="user"):
     conn = get_connection()
     cur = conn.cursor()
+
     cur.execute("""
-        INSERT INTO users(username, password, api_key)
-        VALUES (?, ?, ?)
-    """, (username, password, api_key))
+        INSERT INTO users(username, password, api_key, role)
+        VALUES (?, ?, ?, ?)
+    """, (username, password, api_key, role))
+
     conn.commit()
     conn.close()
 
@@ -71,105 +87,50 @@ def get_user(username, password_hash):
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT api_key FROM users
+        SELECT * FROM users
         WHERE username=? AND password=?
     """, (username, password_hash))
 
-    user = cur.fetchone()
-    conn.close()
-    return user
-
-
-# ================= TASKS =================
-
-def save_task(task_id, username, status, pages, limit_count, created_at):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-    INSERT INTO tasks(task_id, username, status, pages, limit_count, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-    """, (task_id, username, status, pages, limit_count, created_at))
-
-    conn.commit()
-    conn.close()
-
-
-def get_all_tasks():
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("SELECT * FROM tasks ORDER BY created_at DESC")
-    rows = cur.fetchall()
-    conn.close()
-
-    return [dict(row) for row in rows]
-
-
-def get_task_info(task_id):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("SELECT * FROM tasks WHERE task_id=?", (task_id,))
     row = cur.fetchone()
-
     conn.close()
+
     return dict(row) if row else None
 
 
-def update_progress(task_id, progress, page_index, logs):
+def get_all_users():
     conn = get_connection()
     cur = conn.cursor()
-
-    cur.execute("""
-    UPDATE tasks
-    SET progress=?, current_page=?, logs=?
-    WHERE task_id=?
-    """, (progress, page_index, logs, task_id))
-
-    conn.commit()
-    conn.close()
-
-
-def cancel_task(task_id):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-    UPDATE tasks SET cancelled=1, status='cancelled'
-    WHERE task_id=?
-    """, (task_id,))
-
-    conn.commit()
-    conn.close()
-
-
-# ================= RESULTS =================
-
-def save_result(task_id, reel_url, duration):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-    INSERT INTO results(task_id, reel_url, duration)
-    VALUES (?, ?, ?)
-    """, (task_id, reel_url, duration))
-
-    conn.commit()
-    conn.close()
-
-
-def get_task_results(task_id):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-    SELECT reel_url, duration
-    FROM results
-    WHERE task_id=?
-    """, (task_id,))
-
+    cur.execute("SELECT id, username, role, tools FROM users")
     rows = cur.fetchall()
     conn.close()
+    return [dict(r) for r in rows]
 
-    return [dict(row) for row in rows]
+
+def update_user_role(username, role):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET role=? WHERE username=?", (role, username))
+    conn.commit()
+    conn.close()
+
+
+# ================= CAMPAIGNS =================
+
+def get_campaigns():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM campaigns ORDER BY id DESC")
+    rows = cur.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def add_campaign(name, reward, platform, description):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO campaigns(name, reward, platform, description)
+        VALUES (?, ?, ?, ?)
+    """, (name, reward, platform, description))
+    conn.commit()
+    conn.close()
