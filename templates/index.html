@@ -2,23 +2,17 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clipster PRO | SaaS Tools Suite</title>
+<title>Clipster PRO | SaaS Suite</title>
 
 <style>
 
 /* ================= GLOBAL ================= */
 body{
     margin:0;
-    font-family: Inter, system-ui, Arial;
+    font-family: Inter, Arial;
     background:#05070d;
     color:white;
-    overflow-x:hidden;
-}
-
-/* smoother selection */
-::selection{
-    background:#4ade80;
-    color:black;
+    overflow:hidden;
 }
 
 /* ================= BACKGROUND ================= */
@@ -27,293 +21,154 @@ body{
     width:100%;
     height:100%;
     z-index:-1;
-    overflow:hidden;
 }
 
 .blob{
     position:absolute;
     width:500px;
     height:500px;
-    background:radial-gradient(circle,#4ade80,transparent 70%);
+    background:radial-gradient(circle,#4ade80,transparent);
     filter:blur(140px);
-    opacity:0.22;
-    animation:float 10s infinite ease-in-out;
+    opacity:0.18;
 }
 
-.blob2{
-    top:45%;
-    left:60%;
-    background:radial-gradient(circle,#facc15,transparent 70%);
+/* ================= LAYOUT ================= */
+.app{
+    display:flex;
+    height:100vh;
 }
 
-@keyframes float{
-    0%{transform:translate(0,0);}
-    50%{transform:translate(60px,-40px);}
-    100%{transform:translate(0,0);}
+/* ================= SIDEBAR ================= */
+.sidebar{
+    width:260px;
+    background:rgba(255,255,255,0.03);
+    border-right:1px solid rgba(255,255,255,0.06);
+    backdrop-filter:blur(20px);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
 }
 
-/* subtle noise overlay */
-body:before{
-    content:"";
-    position:fixed;
-    width:100%;
-    height:100%;
-    background:url('https://grainy-gradients.vercel.app/noise.svg');
-    opacity:0.04;
-    pointer-events:none;
+.brand{
+    font-size:18px;
+    font-weight:bold;
+    color:#4ade80;
+    margin-bottom:10px;
 }
 
-/* ================= NAV ================= */
-.nav{
+/* nav items */
+.navItem{
+    padding:10px;
+    border-radius:10px;
+    cursor:pointer;
+    color:#aaa;
+    transition:0.2s;
+    border:1px solid transparent;
+}
+
+.navItem:hover{
+    background:rgba(255,255,255,0.04);
+    color:white;
+}
+
+.navItem.active{
+    background:rgba(74,222,128,0.1);
+    border:1px solid rgba(74,222,128,0.3);
+    color:#4ade80;
+}
+
+/* ================= MAIN ================= */
+.main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+}
+
+/* TOP BAR */
+.topbar{
+    padding:15px 25px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:20px 40px;
-    border-bottom:1px solid rgba(255,255,255,0.06);
-    backdrop-filter:blur(16px);
-    background:rgba(255,255,255,0.02);
 }
 
-.logo{
-    font-weight:700;
-    color:#4ade80;
-    font-size:18px;
-    letter-spacing:0.5px;
-}
-
-.nav button{
-    background:rgba(255,255,255,0.06);
-    border:1px solid rgba(255,255,255,0.12);
-    color:white;
-    padding:9px 14px;
-    border-radius:12px;
-    cursor:pointer;
-    transition:0.25s;
-}
-
-.nav button:hover{
-    transform:translateY(-2px);
-    border-color:#4ade80;
-    box-shadow:0 0 20px rgba(74,222,128,0.15);
-}
-
-/* ================= HERO ================= */
-.hero{
-    text-align:center;
-    padding:90px 20px 40px 20px;
-}
-
-.hero h1{
-    font-size:56px;
-    margin-bottom:10px;
-    background:linear-gradient(90deg,#4ade80,#facc15,#4ade80);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-    animation: glowMove 6s infinite linear;
-}
-
-@keyframes glowMove{
-    0%{filter:drop-shadow(0 0 0px #4ade80);}
-    50%{filter:drop-shadow(0 0 12px #4ade80);}
-    100%{filter:drop-shadow(0 0 0px #4ade80);}
-}
-
-.hero p{
-    max-width:750px;
-    margin:auto;
-    color:#b5b5b5;
-    line-height:1.7;
-    font-size:15px;
-}
-
-/* CTA */
-.cta button{
-    margin-top:18px;
-    margin:8px;
-    background:rgba(74,222,128,0.12);
-    border:1px solid rgba(74,222,128,0.35);
-    color:#4ade80;
-    padding:12px 18px;
-    border-radius:14px;
-    cursor:pointer;
-    transition:0.25s;
-}
-
-.cta button:hover{
-    transform:scale(1.05);
-    box-shadow:0 0 25px rgba(74,222,128,0.25);
-}
-
-/* ================= SECTIONS ================= */
-.section{
-    width:90%;
-    max-width:1100px;
-    margin:auto;
-    margin-top:70px;
-}
-
-.section h2{
-    font-size:18px;
-    color:#cfcfcf;
-    margin-bottom:15px;
-}
-
-/* TOOL GRID */
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-    gap:20px;
-}
-
-/* TOOL CARD (UPGRADED PREMIUM FEEL) */
-.card{
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(255,255,255,0.08);
-    border-radius:18px;
-    padding:22px;
-    backdrop-filter:blur(18px);
-    transition:0.3s;
-    cursor:pointer;
-    position:relative;
-    overflow:hidden;
-}
-
-.card:before{
-    content:"";
-    position:absolute;
-    top:-50%;
-    left:-50%;
-    width:200%;
-    height:200%;
-    background:radial-gradient(circle,rgba(74,222,128,0.08),transparent 60%);
-    transform:rotate(25deg);
-    opacity:0;
-    transition:0.4s;
-}
-
-.card:hover:before{
-    opacity:1;
-}
-
-.card:hover{
-    transform:translateY(-6px);
-    border-color:rgba(74,222,128,0.3);
-    box-shadow:0 15px 40px rgba(0,0,0,0.6);
-}
-
-.card h3{
-    color:#4ade80;
-    margin-bottom:8px;
-}
-
-.card p{
+.status{
+    font-size:12px;
     color:#aaa;
-    font-size:13px;
-    line-height:1.5;
 }
 
-/* ================= PANEL ================= */
+/* ================= TOOL AREA ================= */
+.content{
+    padding:25px;
+    overflow:auto;
+}
+
+/* TOOL PANELS */
 .panel{
-    margin-top:20px;
-    padding:22px;
     background:rgba(255,255,255,0.04);
-    border-radius:18px;
     border:1px solid rgba(255,255,255,0.08);
+    border-radius:16px;
+    padding:20px;
     backdrop-filter:blur(18px);
-    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+    margin-bottom:20px;
 }
 
-/* INPUT */
+/* INPUTS */
 textarea,input{
     width:100%;
     padding:12px;
     background:rgba(0,0,0,0.35);
     border:1px solid rgba(255,255,255,0.1);
     color:white;
-    border-radius:12px;
-    outline:none;
-    transition:0.2s;
-}
-
-textarea:focus,input:focus{
-    border-color:#4ade80;
-    box-shadow:0 0 0 2px rgba(74,222,128,0.1);
+    border-radius:10px;
 }
 
 /* BUTTON */
-button.run{
-    margin-top:12px;
-    background:linear-gradient(90deg,rgba(74,222,128,0.15),rgba(250,204,21,0.1));
+button{
+    margin-top:10px;
+    background:rgba(74,222,128,0.12);
     border:1px solid rgba(74,222,128,0.4);
     color:#4ade80;
-    padding:11px 16px;
-    border-radius:12px;
+    padding:10px 14px;
+    border-radius:10px;
     cursor:pointer;
-    transition:0.25s;
 }
 
-button.run:hover{
-    transform:translateY(-2px);
-    box-shadow:0 0 20px rgba(74,222,128,0.2);
+/* TOOL VIEWS */
+.view{
+    display:none;
 }
 
-/* STATUS */
-.statusbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-top:12px;
+.view.active{
+    display:block;
+}
+
+/* LOGS */
+.logs{
+    height:220px;
+    overflow:auto;
+    background:rgba(0,0,0,0.35);
+    padding:10px;
+    font-family:monospace;
     font-size:12px;
-    color:#9ca3af;
+    border-radius:10px;
 }
 
 /* PROGRESS */
 .progress{
-    width:100%;
     height:10px;
     background:rgba(255,255,255,0.08);
     border-radius:20px;
     overflow:hidden;
-    margin-top:12px;
+    margin-top:10px;
 }
 
 .fill{
     height:100%;
     width:0%;
     background:linear-gradient(90deg,#facc15,#4ade80);
-    transition:0.35s;
-}
-
-/* LOGS */
-.logs{
-    margin-top:15px;
-    height:240px;
-    overflow:auto;
-    background:rgba(0,0,0,0.35);
-    padding:12px;
-    font-family:monospace;
-    font-size:12px;
-    border-radius:12px;
-}
-
-/* smooth log animation */
-.logs div{
-    opacity:0;
-    transform:translateY(5px);
-    animation:fadeIn 0.2s forwards;
-}
-
-@keyframes fadeIn{
-    to{opacity:1; transform:translateY(0);}
-}
-
-/* FOOTER */
-footer{
-    text-align:center;
-    color:#666;
-    margin-top:90px;
-    padding:30px;
-    border-top:1px solid rgba(255,255,255,0.05);
 }
 
 </style>
@@ -321,114 +176,123 @@ footer{
 
 <body>
 
-<!-- BACKGROUND -->
 <div class="bg">
     <div class="blob"></div>
-    <div class="blob blob2"></div>
 </div>
 
-<!-- NAV -->
-<div class="nav">
-    <div class="logo">🚀 Clipster PRO</div>
-    <button onclick="scrollToTools()">Explore Tools</button>
+<div class="app">
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar">
+    <div class="brand">🚀 Clipster SaaS</div>
+
+    <div class="navItem active" onclick="switchView('dashboard')">Dashboard</div>
+    <div class="navItem" onclick="switchView('scraper')">Scraper Tool</div>
+    <div class="navItem" onclick="switchView('editor')">Reel Editor</div>
+    <div class="navItem" onclick="switchView('campaigns')">Campaigns</div>
+    <div class="navItem" onclick="switchView('team')">Team Hub</div>
+    <div class="navItem" onclick="switchView('submissions')">Submissions</div>
 </div>
 
-<!-- HERO -->
-<div class="hero">
-    <h1>Automate Your Clipster Workflow</h1>
-    <p>
-        SaaS automation suite for Instagram scraping, reel processing,
-        campaign matching, and team workflow management for Clipster.gg systems.
-    </p>
+<!-- ================= MAIN ================= -->
+<div class="main">
 
-    <div class="cta">
-        <button onclick="scrollToTools()">Start Using Tools</button>
-        <button>View Documentation</button>
+<div class="topbar">
+    <div>Clipster Workflow System</div>
+    <div class="status" id="status">Ready</div>
+</div>
+
+<div class="content">
+
+<!-- ================= DASHBOARD ================= -->
+<div id="dashboard" class="view active">
+    <div class="panel">
+        <h2>Welcome to Clipster SaaS</h2>
+        <p>Manage scraping, editing, campaigns, team workflow and submissions from one system.</p>
     </div>
 </div>
 
-<!-- TOOLS -->
-<div class="section" id="tools">
-
-<h2>Tool Suite</h2>
-
-<div class="grid">
-
-<div class="card" onclick="selectTool('scraper')">
-<h3>Instagram Scraper</h3>
-<p>Extract reels from pages with intelligent filtering and automation engine.</p>
-</div>
-
-<div class="card">
-<h3>Reel Editor</h3>
-<p>Crop gameplay, add overlays, replace backgrounds (AI enhancement).</p>
-</div>
-
-<div class="card">
-<h3>Campaign Manager</h3>
-<p>Auto-match reels with campaign rules and brand requirements.</p>
-</div>
-
-<div class="card">
-<h3>Team Hub</h3>
-<p>Track teammates, submissions, earnings, and activity logs.</p>
-</div>
-
-</div>
-
-</div>
-
-<!-- RUN PANEL -->
-<div class="section">
-
-<h2>Workspace</h2>
+<!-- ================= SCRAPER ================= -->
+<div id="scraper" class="view">
 
 <div class="panel">
+<h3>Instagram Scraper</h3>
 
-<h3 id="toolTitle">Select a Tool</h3>
-
-<textarea id="pages" placeholder="Enter Instagram pages (one per line)"></textarea>
+<textarea id="pages" placeholder="Enter Instagram pages"></textarea>
 <br><br>
 
 <input id="limit" value="10">
 
-<button class="run" onclick="startTask()">Run Tool</button>
-
-<div class="statusbar">
-<span id="status">Idle</span>
-<span id="taskid"></span>
-</div>
+<button onclick="startTask()">Run Scraper</button>
 
 <div class="progress">
 <div class="fill" id="progress"></div>
 </div>
 
+</div>
+
+<div class="panel">
+<h3>Live Logs</h3>
 <div class="logs" id="logs"></div>
-
 </div>
 
 </div>
 
-<footer>
-Clipster PRO SaaS Suite • Built for automation of Clipster.gg workflows
-</footer>
+<!-- ================= EDITOR ================= -->
+<div id="editor" class="view">
+<div class="panel">
+<h3>Reel Editor (UI Placeholder)</h3>
+<p>Crop gameplay, add overlays, change backgrounds (coming next).</p>
+</div>
+</div>
+
+<!-- ================= CAMPAIGNS ================= -->
+<div id="campaigns" class="view">
+<div class="panel">
+<h3>Campaign Manager</h3>
+<p>Auto match reels with campaign rules.</p>
+</div>
+</div>
+
+<!-- ================= TEAM ================= -->
+<div id="team" class="view">
+<div class="panel">
+<h3>Team Hub</h3>
+<p>Track members, earnings, submissions (future SaaS layer).</p>
+</div>
+</div>
+
+<!-- ================= SUBMISSIONS ================= -->
+<div id="submissions" class="view">
+<div class="panel">
+<h3>Submissions</h3>
+<p>Auto submission system will appear here.</p>
+</div>
+</div>
+
+</div>
+</div>
 
 <script>
 
 let currentTask=null;
 
-function scrollToTools(){
-document.getElementById("tools").scrollIntoView({behavior:"smooth"});
+/* ================= VIEW SWITCH ================= */
+function switchView(id){
+
+document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+
+document.querySelectorAll(".navItem").forEach(n=>n.classList.remove("active"));
+event.target.classList.add("active");
 }
 
-function selectTool(name){
-document.getElementById("toolTitle").innerText="Active Tool: "+name;
-}
-
+/* ================= START TASK ================= */
 async function startTask(){
 
 document.getElementById("logs").innerHTML="";
 document.getElementById("progress").style.width="0%";
+
 document.getElementById("status").innerText="Running...";
 
 let pages=document.getElementById("pages").value.split("\n").filter(x=>x.trim());
@@ -444,9 +308,11 @@ let data=await res.json();
 currentTask=data.task_id;
 
 log("Task started: "+currentTask);
+
 poll();
 }
 
+/* ================= POLL ================= */
 async function poll(){
 
 if(!currentTask)return;
@@ -458,10 +324,6 @@ if(data.task){
 document.getElementById("progress").style.width=(data.task.progress||0)+"%";
 }
 
-if(data.results){
-log("Results updated: "+data.results.length);
-}
-
 if(data.task && data.task.status==="running"){
 setTimeout(poll,2000);
 }else{
@@ -469,6 +331,7 @@ document.getElementById("status").innerText="Done";
 }
 }
 
+/* ================= LOG ================= */
 function log(m){
 let box=document.getElementById("logs");
 let d=document.createElement("div");
