@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clipster PRO | SaaS Dashboard</title>
+<title>Clipster PRO | SaaS Tools Suite</title>
 
 <style>
 
@@ -15,19 +15,12 @@ body{
     overflow-x:hidden;
 }
 
-/* selection */
-::selection{
-    background:#4ade80;
-    color:black;
-}
-
 /* ================= BACKGROUND ================= */
 .bg{
     position:fixed;
     width:100%;
     height:100%;
     z-index:-1;
-    overflow:hidden;
 }
 
 .blob{
@@ -52,115 +45,153 @@ body{
     100%{transform:translate(0,0);}
 }
 
-/* ================= LAYOUT ================= */
-.layout{
+/* ================= TOP BAR ================= */
+.topbar{
     display:flex;
-}
-
-/* ================= SIDEBAR ================= */
-.sidebar{
-    width:240px;
-    min-height:100vh;
-    background:rgba(255,255,255,0.03);
-    border-right:1px solid rgba(255,255,255,0.06);
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 25px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
     backdrop-filter:blur(16px);
-    padding:20px;
+    background:rgba(255,255,255,0.02);
 }
 
-.sidebar h2{
+.logo{
     color:#4ade80;
-    font-size:16px;
-    margin-bottom:20px;
+    font-weight:700;
 }
 
-.nav-item{
-    padding:10px;
-    margin:6px 0;
-    border-radius:10px;
+.menu-btn{
+    font-size:22px;
     cursor:pointer;
-    color:#aaa;
-    transition:0.2s;
+    padding:6px 12px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.1);
 }
 
-.nav-item:hover{
+/* ================= SIDEBAR (HIDDEN DEFAULT) ================= */
+.sidebar{
+    position:fixed;
+    top:0;
+    left:-260px;
+    width:240px;
+    height:100%;
+    background:rgba(0,0,0,0.85);
+    backdrop-filter:blur(18px);
+    border-right:1px solid rgba(255,255,255,0.08);
+    padding:20px;
+    transition:0.3s ease;
+    z-index:999;
+}
+
+.sidebar.active{
+    left:0;
+}
+
+.sidebar h3{
+    color:#4ade80;
+    margin-bottom:15px;
+}
+
+.sidebar div{
+    padding:10px;
+    color:#aaa;
+    cursor:pointer;
+    border-radius:8px;
+}
+
+.sidebar div:hover{
     background:rgba(74,222,128,0.1);
     color:white;
 }
 
-/* ================= MAIN ================= */
-.main{
-    flex:1;
-    padding:30px;
+/* ================= HERO ================= */
+.hero{
+    text-align:center;
+    padding:80px 20px 30px;
 }
 
-/* ================= HERO ================= */
 .hero h1{
-    font-size:42px;
-    margin-bottom:10px;
+    font-size:54px;
     background:linear-gradient(90deg,#4ade80,#facc15);
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
 }
 
+.hero p{
+    max-width:750px;
+    margin:auto;
+    color:#aaa;
+    line-height:1.6;
+}
+
 /* ================= CAMPAIGNS ================= */
-.campaigns{
-    margin-top:30px;
+.section{
+    width:90%;
+    max-width:1100px;
+    margin:auto;
+    margin-top:60px;
 }
 
-.campaign-row{
-    display:flex;
-    gap:20px;
+/* MARQUEE STYLE */
+.marquee{
     overflow:hidden;
+    white-space:nowrap;
+    margin-top:20px;
 }
 
-.scroll-left, .scroll-right{
-    display:flex;
-    gap:15px;
-    animation:scroll 18s linear infinite;
+.track{
+    display:inline-block;
+    animation:move 18s linear infinite;
 }
 
-.scroll-right{
-    animation-direction:reverse;
+@keyframes move{
+    from{transform:translateX(100%);}
+    to{transform:translateX(-100%);}
 }
 
-@keyframes scroll{
-    0%{transform:translateX(0);}
-    100%{transform:translateX(-50%);}
-}
-
-.campaign-card{
-    min-width:260px;
+.campaign{
+    display:inline-block;
+    min-width:240px;
     background:rgba(255,255,255,0.05);
     border:1px solid rgba(255,255,255,0.08);
+    padding:14px;
     border-radius:14px;
-    padding:15px;
+    margin-right:12px;
 }
 
-.campaign-card h4{
+.campaign b{
     color:#4ade80;
-    margin:0;
+    display:block;
 }
 
-.tag{
-    font-size:11px;
-    padding:3px 8px;
-    background:rgba(74,222,128,0.15);
-    border:1px solid rgba(74,222,128,0.3);
-    border-radius:20px;
-    display:inline-block;
-    margin-top:6px;
-    color:#4ade80;
-}
-
-.desc{
-    font-size:12px;
+.campaign small{
     color:#aaa;
-    margin-top:8px;
+    font-size:11px;
 }
 
-/* ================= TOOLS PAGE PANEL ================= */
+/* ================= CARDS ================= */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:16px;
+}
+
+.card h3{
+    color:#4ade80;
+}
+
+/* ================= WORKSPACE ================= */
 .panel{
-    margin-top:30px;
+    margin-top:20px;
     padding:20px;
     background:rgba(255,255,255,0.04);
     border-radius:16px;
@@ -185,18 +216,6 @@ button{
     cursor:pointer;
 }
 
-/* LOGS */
-.logs{
-    margin-top:15px;
-    height:200px;
-    overflow:auto;
-    background:rgba(0,0,0,0.35);
-    padding:10px;
-    font-family:monospace;
-    font-size:12px;
-    border-radius:10px;
-}
-
 </style>
 </head>
 
@@ -207,70 +226,115 @@ button{
     <div class="blob blob2"></div>
 </div>
 
-<div class="layout">
-
-<!-- SIDEBAR -->
-<div class="sidebar">
-<h2>🚀 Clipster PRO</h2>
-
-<div class="nav-item">Dashboard</div>
-<div class="nav-item">Campaigns</div>
-<div class="nav-item">Campaign Manager</div>
-<div class="nav-item">Team Hub</div>
-<div class="nav-item">Submissions</div>
-<div class="nav-item">Settings</div>
-
+<!-- SIDEBAR (HIDDEN) -->
+<div class="sidebar" id="sidebar">
+    <h3>🚀 Clipster</h3>
+    <div>Dashboard</div>
+    <div>Campaigns</div>
+    <div>Campaign Manager</div>
+    <div>Team Hub</div>
+    <div>Submissions</div>
+    <div>Settings</div>
 </div>
 
-<!-- MAIN -->
-<div class="main">
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">Clipster PRO</div>
+    <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+</div>
 
 <!-- HERO -->
 <div class="hero">
-<h1>Dashboard Overview</h1>
-<p>Manage campaigns, teams, and automation workflows for Clipster.gg</p>
+    <h1>Automate Your Clipster Workflow</h1>
+    <p>SaaS automation system for scraping, campaign matching, reel processing and team workflow.</p>
 </div>
 
 <!-- ACTIVE CAMPAIGNS -->
-<div class="campaigns">
+<div class="section">
 
 <h3>🔥 Active Campaigns</h3>
 
-<div class="campaign-row">
-<div class="scroll-left">
+<div class="marquee">
+<div class="track">
 
-<div class="campaign-card">
-<h4>cs2skin.com</h4>
-<span class="tag">CS2 Campaign</span>
-<div class="desc">Upload CS2 gameplay with cs2skin branding overlay</div>
+<div class="campaign">
+<b>cs2skin.com</b>
+<small>CS2 Campaign</small>
+<small>Upload CS2 gameplay with logo</small>
 </div>
 
-<div class="campaign-card">
-<h4>hellcase</h4>
-<span class="tag">Case Opening</span>
-<div class="desc">Promote case openings with highlight reels</div>
+<div class="campaign">
+<b>hellcase</b>
+<small>Case Opening</small>
+<small>Promote case opening reels</small>
 </div>
 
-<div class="campaign-card">
-<h4>tradeit.gg</h4>
-<span class="tag">Trading</span>
-<div class="desc">CS2 trading content with branding required</div>
-</div>
-
-</div>
+<div class="campaign">
+<b>tradeit.gg</b>
+<small>Trading</small>
+<small>CS2 trading highlights required</small>
 </div>
 
 </div>
+</div>
 
-<!-- TOOL PLACEHOLDER (separate page later) -->
+</div>
+
+<!-- TOOLS -->
+<div class="section">
+
+<h3>Tool Suite</h3>
+
+<div class="grid">
+
+<div class="card">
+<h3>Instagram Scraper</h3>
+<p>Extract reels from Instagram pages.</p>
+</div>
+
+<div class="card">
+<h3>Reel Editor</h3>
+<p>Crop gameplay + add overlays.</p>
+</div>
+
+<div class="card">
+<h3>Campaign Manager</h3>
+<p>Auto rule matching system.</p>
+</div>
+
+<div class="card">
+<h3>Team Hub</h3>
+<p>Track team activity & earnings.</p>
+</div>
+
+</div>
+
+</div>
+
+<!-- WORKSPACE -->
+<div class="section">
+
+<h3>Workspace</h3>
+
 <div class="panel">
-<h3>Tool System</h3>
-<p>Tools will be moved to a separate page (as requested).</p>
-<p>This dashboard will only handle campaigns + team analytics.</p>
+
+<textarea placeholder="Instagram pages"></textarea>
+<br><br>
+<input value="10">
+<br>
+<button>Run Tool</button>
+
 </div>
 
 </div>
-</div>
+
+<script>
+
+function toggleSidebar(){
+    document.getElementById("sidebar").classList.toggle("active");
+}
+
+</script>
 
 </body>
 </html>
