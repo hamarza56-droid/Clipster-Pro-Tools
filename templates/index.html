@@ -15,11 +15,6 @@ body{
     overflow-x:hidden;
 }
 
-::selection{
-    background:#4ade80;
-    color:black;
-}
-
 /* ================= BACKGROUND ================= */
 .bg{
     position:fixed;
@@ -50,82 +45,88 @@ body{
     100%{transform:translate(0,0);}
 }
 
-body:before{
-    content:"";
-    position:fixed;
-    width:100%;
-    height:100%;
-    background:url('https://grainy-gradients.vercel.app/noise.svg');
-    opacity:0.04;
-}
-
-/* ================= NAV ================= */
-.nav{
+/* ================= TOP BAR ================= */
+.topbar{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:20px 40px;
+    padding:18px 25px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    backdrop-filter:blur(16px);
+    background:rgba(255,255,255,0.02);
 }
 
-.logo{color:#4ade80;font-weight:700;}
+.logo{
+    color:#4ade80;
+    font-weight:700;
+}
 
-.menuBtn{cursor:pointer;font-size:22px;}
+.menu-btn{
+    font-size:22px;
+    cursor:pointer;
+    padding:6px 12px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.1);
+}
 
-/* ================= SIDEBAR ================= */
+/* ================= SIDEBAR (HIDDEN DEFAULT) ================= */
 .sidebar{
     position:fixed;
-    left:-260px;
     top:0;
-    width:260px;
+    left:-260px;
+    width:240px;
     height:100%;
-    background:rgba(10,12,18,0.95);
-    backdrop-filter:blur(20px);
-    transition:0.3s;
+    background:rgba(0,0,0,0.85);
+    backdrop-filter:blur(18px);
+    border-right:1px solid rgba(255,255,255,0.08);
     padding:20px;
+    transition:0.3s ease;
+    z-index:999;
 }
 
-.sidebar.active{left:0;}
+.sidebar.active{
+    left:0;
+}
+
+.sidebar h3{
+    color:#4ade80;
+    margin-bottom:15px;
+}
+
+.sidebar div{
+    padding:10px;
+    color:#aaa;
+    cursor:pointer;
+    border-radius:8px;
+}
+
+.sidebar div:hover{
+    background:rgba(74,222,128,0.1);
+    color:white;
+}
 
 /* ================= HERO ================= */
 .hero{
     text-align:center;
-    padding:80px 20px 20px;
+    padding:80px 20px 30px;
 }
 
 .hero h1{
-    font-size:52px;
+    font-size:54px;
     background:linear-gradient(90deg,#4ade80,#facc15);
     -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.hero p{
+    max-width:750px;
+    margin:auto;
+    color:#aaa;
+    line-height:1.6;
 }
 
 /* ================= CAMPAIGNS ================= */
-.ticker{
-    overflow:hidden;
-    white-space:nowrap;
-    padding:10px 0;
-    border-top:1px solid rgba(255,255,255,0.06);
-    border-bottom:1px solid rgba(255,255,255,0.06);
-}
-
-.track{
-    display:inline-block;
-    animation:scroll 18s linear infinite;
-}
-
-@keyframes scroll{
-    0%{transform:translateX(100%);}
-    100%{transform:translateX(-100%);}
-}
-
-.campaign{
-    display:inline-block;
-    margin:0 30px;
-    padding:10px 14px;
-    background:rgba(255,255,255,0.04);
-    border-radius:12px;
-}
-
-/* ================= TOOLS ================= */
 .section{
     width:90%;
     max-width:1100px;
@@ -133,6 +134,44 @@ body:before{
     margin-top:60px;
 }
 
+/* MARQUEE STYLE */
+.marquee{
+    overflow:hidden;
+    white-space:nowrap;
+    margin-top:20px;
+}
+
+.track{
+    display:inline-block;
+    animation:move 18s linear infinite;
+}
+
+@keyframes move{
+    from{transform:translateX(100%);}
+    to{transform:translateX(-100%);}
+}
+
+.campaign{
+    display:inline-block;
+    min-width:240px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:14px;
+    border-radius:14px;
+    margin-right:12px;
+}
+
+.campaign b{
+    color:#4ade80;
+    display:block;
+}
+
+.campaign small{
+    color:#aaa;
+    font-size:11px;
+}
+
+/* ================= CARDS ================= */
 .grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
@@ -141,9 +180,13 @@ body:before{
 
 .card{
     background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
     padding:20px;
-    border-radius:14px;
-    cursor:pointer;
+    border-radius:16px;
+}
+
+.card h3{
+    color:#4ade80;
 }
 
 /* ================= WORKSPACE ================= */
@@ -151,52 +194,25 @@ body:before{
     margin-top:20px;
     padding:20px;
     background:rgba(255,255,255,0.04);
-    border-radius:14px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
 }
 
-/* ================= REEL EDITOR (NEW) ================= */
-.editor{
-    display:none;
-    margin-top:20px;
-    padding:20px;
-    background:rgba(255,255,255,0.04);
-    border-radius:14px;
-}
-
-.preview{
+textarea,input{
     width:100%;
-    height:260px;
-    background:#111;
-    border-radius:12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#666;
-}
-
-.controls{
-    margin-top:15px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-}
-
-.controls input{
-    padding:10px;
-    background:#000;
-    border:1px solid #333;
+    padding:12px;
+    border-radius:10px;
+    background:rgba(0,0,0,0.4);
+    border:1px solid rgba(255,255,255,0.1);
     color:white;
-    border-radius:8px;
 }
 
-/* ================= BUTTON ================= */
 button{
     margin-top:10px;
+    background:#4ade80;
+    border:none;
     padding:10px 14px;
     border-radius:10px;
-    border:1px solid #4ade80;
-    background:rgba(74,222,128,0.15);
-    color:#4ade80;
     cursor:pointer;
 }
 
@@ -205,52 +221,92 @@ button{
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
-    <h3>Tools</h3>
-    <div onclick="openTool('scraper')">Scraper</div>
-    <div onclick="openTool('editor')">Reel Editor</div>
-    <div>Campaign Manager</div>
-    <div>Team Hub</div>
+<div class="bg">
+    <div class="blob"></div>
+    <div class="blob blob2"></div>
 </div>
 
-<div class="nav">
+<!-- SIDEBAR (HIDDEN) -->
+<div class="sidebar" id="sidebar">
+    <h3>🚀 Clipster</h3>
+    <div>Dashboard</div>
+    <div>Campaigns</div>
+    <div>Campaign Manager</div>
+    <div>Team Hub</div>
+    <div>Submissions</div>
+    <div>Settings</div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
     <div class="logo">Clipster PRO</div>
-    <div class="menuBtn" onclick="toggle()">☰</div>
+    <div class="menu-btn" onclick="toggleSidebar()">☰</div>
 </div>
 
 <!-- HERO -->
 <div class="hero">
-    <h1>Automate Clipster Workflow</h1>
+    <h1>Automate Your Clipster Workflow</h1>
+    <p>SaaS automation system for scraping, campaign matching, reel processing and team workflow.</p>
 </div>
 
-<!-- CAMPAIGNS -->
-<div class="ticker">
+<!-- ACTIVE CAMPAIGNS -->
+<div class="section">
+
+<h3>🔥 Active Campaigns</h3>
+
+<div class="marquee">
 <div class="track">
 
 <div class="campaign">
-cs2skin.com<br><small>Upload CS2 content</small>
+<b>cs2skin.com</b>
+<small>CS2 Campaign</small>
+<small>Upload CS2 gameplay with logo</small>
 </div>
 
 <div class="campaign">
-hellcase<br><small>Case opening reels</small>
+<b>hellcase</b>
+<small>Case Opening</small>
+<small>Promote case opening reels</small>
 </div>
 
 <div class="campaign">
-tradeit.gg<br><small>Trading clips</small>
+<b>tradeit.gg</b>
+<small>Trading</small>
+<small>CS2 trading highlights required</small>
 </div>
 
 </div>
 </div>
 
-<!-- TOOL GRID -->
+</div>
+
+<!-- TOOLS -->
 <div class="section">
 
+<h3>Tool Suite</h3>
+
 <div class="grid">
-<div class="card" onclick="openTool('scraper')">Instagram Scraper</div>
-<div class="card" onclick="openTool('editor')">Reel Editor</div>
-<div class="card">Campaign Manager</div>
-<div class="card">Team Hub</div>
+
+<div class="card">
+<h3>Instagram Scraper</h3>
+<p>Extract reels from Instagram pages.</p>
+</div>
+
+<div class="card">
+<h3>Reel Editor</h3>
+<p>Crop gameplay + add overlays.</p>
+</div>
+
+<div class="card">
+<h3>Campaign Manager</h3>
+<p>Auto rule matching system.</p>
+</div>
+
+<div class="card">
+<h3>Team Hub</h3>
+<p>Track team activity & earnings.</p>
+</div>
+
 </div>
 
 </div>
@@ -258,30 +314,15 @@ tradeit.gg<br><small>Trading clips</small>
 <!-- WORKSPACE -->
 <div class="section">
 
-<div class="panel" id="scraperPanel">
-<h3>Scraper Tool</h3>
-<textarea placeholder="pages"></textarea>
-</div>
+<h3>Workspace</h3>
 
-<!-- REEL EDITOR -->
-<div class="editor" id="editorPanel">
+<div class="panel">
 
-<h3>Reel Editor</h3>
-
-<div class="preview">
-Upload preview will appear here
-</div>
-
-<div class="controls">
-
-<input placeholder="Crop Start (sec)">
-<input placeholder="Crop End (sec)">
-<input placeholder="Overlay Logo URL">
-<input placeholder="Background Type">
-
-</div>
-
-<button>Process Reel</button>
+<textarea placeholder="Instagram pages"></textarea>
+<br><br>
+<input value="10">
+<br>
+<button>Run Tool</button>
 
 </div>
 
@@ -289,22 +330,8 @@ Upload preview will appear here
 
 <script>
 
-function toggle(){
-document.getElementById("sidebar").classList.toggle("active");
-}
-
-function openTool(t){
-
-document.getElementById("scraperPanel").style.display="none";
-document.getElementById("editorPanel").style.display="none";
-
-if(t==="scraper"){
-document.getElementById("scraperPanel").style.display="block";
-}
-
-if(t==="editor"){
-document.getElementById("editorPanel").style.display="block";
-}
+function toggleSidebar(){
+    document.getElementById("sidebar").classList.toggle("active");
 }
 
 </script>
