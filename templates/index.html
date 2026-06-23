@@ -174,7 +174,6 @@ body{
     to{transform:translateX(-100%);}
 }
 
-/* ================= CAMPAIGN CARD ================= */
 .campaign{
     display:inline-block;
     min-width:260px;
@@ -185,10 +184,7 @@ body{
     margin-right:12px;
 }
 
-.campaign b{
-    color:#4ade80;
-    display:block;
-}
+.campaign b{ color:#4ade80; display:block; }
 
 .badge{
     display:inline-block;
@@ -221,9 +217,7 @@ body{
     cursor:pointer;
 }
 
-.card h3{
-    color:#4ade80;
-}
+.card h3{ color:#4ade80; }
 
 /* ================= FEED ================= */
 .feed{
@@ -241,7 +235,39 @@ body{
     color:#bbb;
 }
 
-/* ================= FOOTER ================= */
+/* ================= ADMIN PANEL ================= */
+.admin{
+    display:none;
+    width:90%;
+    max-width:1100px;
+    margin:40px auto;
+    padding:20px;
+    border-radius:16px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.1);
+}
+
+.admin h2{ color:#facc15; }
+
+.admin input, .admin textarea{
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border-radius:10px;
+    background:rgba(0,0,0,0.4);
+    border:1px solid rgba(255,255,255,0.1);
+    color:white;
+}
+
+.admin button{
+    margin-top:10px;
+    background:#4ade80;
+    border:none;
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
 footer{
     text-align:center;
     color:#666;
@@ -263,6 +289,7 @@ footer{
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
     <h3>🚀 Clipster</h3>
+    <div onclick="toggleAdmin()">Admin Panel</div>
     <div>Dashboard</div>
     <div>Campaigns</div>
     <div>Campaign Manager</div>
@@ -283,7 +310,7 @@ footer{
     <p>SaaS automation system for scraping, campaign matching, reel processing and team workflow.</p>
 </div>
 
-<!-- STATS (SAFE STATIC - CAN BE CONNECTED LATER) -->
+<!-- STATS -->
 <div class="stats">
     <div class="stat"><b>12</b><br>Active Campaigns</div>
     <div class="stat"><b>8</b><br>Team Members</div>
@@ -291,7 +318,7 @@ footer{
     <div class="stat"><b>$2,430</b><br>Revenue</div>
 </div>
 
-<!-- ACTIVE CAMPAIGNS ROW 1 -->
+<!-- CAMPAIGNS -->
 <div class="section">
 <h3>🔥 Active Campaigns</h3>
 
@@ -312,84 +339,42 @@ footer{
 <small>Promote case opening reels</small>
 </div>
 
-<div class="campaign">
-<b>tradeit.gg</b>
-<span class="badge">TRADE</span>
-<small>Reward: $0.90</small>
-<small>CS2 trading highlights required</small>
-</div>
-
 </div>
 </div>
 </div>
 
-<!-- ACTIVE CAMPAIGNS ROW 2 -->
-<div class="section">
-<div class="marquee">
-<div class="track reverse">
-
-<div class="campaign">
-<b>skin.club</b>
-<span class="badge">SKINS</span>
-<small>Reward: $1.10</small>
-<small>High-quality CS2 montage clips</small>
-</div>
-
-<div class="campaign">
-<b>csgoempire</b>
-<span class="badge">GAMBLE</span>
-<small>Reward: $1.25</small>
-<small>Casino-style CS2 content</small>
-</div>
-
-</div>
-</div>
-</div>
-
-<!-- LIVE ACTIVITY -->
+<!-- FEED -->
 <div class="section">
 <h3>📡 Live Activity Feed</h3>
-
 <div class="feed">
 <div>Hamza submitted Hellcase reel</div>
 <div>Ali joined cs2skin campaign</div>
 <div>Ahmed earned $12.50</div>
-<div>Tradeit.gg campaign updated</div>
-<div>5 reels approved automatically</div>
 </div>
 </div>
 
 <!-- TOOL SUITE -->
 <div class="section">
 <h3>Tool Suite</h3>
-
 <div class="grid">
-
-<div class="card" onclick="location.href='/scraper'"><h3>Instagram Scraper</h3></div>
-<div class="card" onclick="location.href='/editor'"><h3>Reel Editor</h3></div>
-<div class="card" onclick="location.href='/campaign-manager'"><h3>Campaign Manager</h3></div>
-<div class="card" onclick="location.href='/team-hub'"><h3>Team Hub</h3></div>
-
+<div class="card"><h3>Instagram Scraper</h3></div>
+<div class="card"><h3>Reel Editor</h3></div>
+<div class="card"><h3>Campaign Manager</h3></div>
+<div class="card"><h3>Team Hub</h3></div>
 </div>
 </div>
 
-<!-- UPCOMING CAMPAIGNS -->
-<div class="section">
-<h3>⏳ Upcoming Campaigns</h3>
+<!-- ADMIN PANEL -->
+<div class="admin" id="adminPanel">
+<h2>Admin Panel</h2>
 
-<div class="grid">
+<p>System Controls</p>
 
-<div class="card">
-<h3>lootbear</h3>
-<p>CS2 skin giveaway campaigns starting soon</p>
-</div>
+<input placeholder="Update Active Campaigns Count">
+<input placeholder="Update Revenue">
+<textarea placeholder="Add announcement..."></textarea>
 
-<div class="card">
-<h3>buff163</h3>
-<p>Trading automation partnership incoming</p>
-</div>
-
-</div>
+<button>Save Changes</button>
 </div>
 
 <!-- FOOTER -->
@@ -401,6 +386,11 @@ Clipster PRO SaaS Suite • Built for automation of Clipster.gg workflows
 
 function toggleSidebar(){
     document.getElementById("sidebar").classList.toggle("active");
+}
+
+function toggleAdmin(){
+    let a = document.getElementById("adminPanel");
+    a.style.display = (a.style.display === "block") ? "none" : "block";
 }
 
 </script>
