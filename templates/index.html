@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clipster PRO | SaaS Tools Suite</title>
+<title>Clipster PRO | SaaS Dashboard</title>
 
 <style>
 
@@ -15,6 +15,7 @@ body{
     overflow-x:hidden;
 }
 
+/* selection */
 ::selection{
     background:#4ade80;
     color:black;
@@ -51,122 +52,149 @@ body{
     100%{transform:translate(0,0);}
 }
 
-body:before{
-    content:"";
-    position:fixed;
-    width:100%;
-    height:100%;
-    background:url('https://grainy-gradients.vercel.app/noise.svg');
-    opacity:0.04;
-    pointer-events:none;
-}
-
-/* ================= NAV ================= */
-.nav{
+/* ================= LAYOUT ================= */
+.layout{
     display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:20px 40px;
-    border-bottom:1px solid rgba(255,255,255,0.06);
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar{
+    width:240px;
+    min-height:100vh;
+    background:rgba(255,255,255,0.03);
+    border-right:1px solid rgba(255,255,255,0.06);
     backdrop-filter:blur(16px);
-    background:rgba(255,255,255,0.02);
+    padding:20px;
 }
 
-.logo{
-    font-weight:700;
+.sidebar h2{
     color:#4ade80;
-    font-size:18px;
+    font-size:16px;
+    margin-bottom:20px;
 }
 
-.nav button{
-    background:rgba(255,255,255,0.06);
-    border:1px solid rgba(255,255,255,0.12);
-    color:white;
-    padding:9px 14px;
-    border-radius:12px;
+.nav-item{
+    padding:10px;
+    margin:6px 0;
+    border-radius:10px;
     cursor:pointer;
+    color:#aaa;
+    transition:0.2s;
+}
+
+.nav-item:hover{
+    background:rgba(74,222,128,0.1);
+    color:white;
+}
+
+/* ================= MAIN ================= */
+.main{
+    flex:1;
+    padding:30px;
 }
 
 /* ================= HERO ================= */
-.hero{
-    text-align:center;
-    padding:90px 20px 40px 20px;
-}
-
 .hero h1{
-    font-size:56px;
-    background:linear-gradient(90deg,#4ade80,#facc15,#4ade80);
+    font-size:42px;
+    margin-bottom:10px;
+    background:linear-gradient(90deg,#4ade80,#facc15);
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
 }
 
-/* ================= CAMPAIGN TICKER (NEW) ================= */
-.ticker-wrap{
+/* ================= CAMPAIGNS ================= */
+.campaigns{
     margin-top:30px;
-    overflow:hidden;
-    white-space:nowrap;
 }
 
-.ticker{
-    display:inline-block;
+.campaign-row{
+    display:flex;
+    gap:20px;
+    overflow:hidden;
+}
+
+.scroll-left, .scroll-right{
+    display:flex;
+    gap:15px;
     animation:scroll 18s linear infinite;
 }
 
-@keyframes scroll{
-    from{transform:translateX(100%);}
-    to{transform:translateX(-100%);}
+.scroll-right{
+    animation-direction:reverse;
 }
 
-.campaign{
-    display:inline-block;
+@keyframes scroll{
+    0%{transform:translateX(0);}
+    100%{transform:translateX(-50%);}
+}
+
+.campaign-card{
+    min-width:260px;
     background:rgba(255,255,255,0.05);
     border:1px solid rgba(255,255,255,0.08);
-    padding:10px 16px;
-    border-radius:12px;
-    margin-right:12px;
-    min-width:220px;
-}
-
-.campaign b{
-    color:#4ade80;
-    font-size:13px;
-}
-
-.campaign small{
-    color:#aaa;
-    display:block;
-    font-size:11px;
-}
-
-/* ================= TOOL GRID ================= */
-.section{
-    width:90%;
-    max-width:1100px;
-    margin:auto;
-    margin-top:70px;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-    gap:20px;
-}
-
-.card{
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(255,255,255,0.08);
-    border-radius:18px;
-    padding:22px;
-}
-
-/* ================= WORKSPACE NOTICE ================= */
-.workspace-note{
-    background:rgba(255,255,255,0.04);
+    border-radius:14px;
     padding:15px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,0.08);
+}
+
+.campaign-card h4{
+    color:#4ade80;
+    margin:0;
+}
+
+.tag{
+    font-size:11px;
+    padding:3px 8px;
+    background:rgba(74,222,128,0.15);
+    border:1px solid rgba(74,222,128,0.3);
+    border-radius:20px;
+    display:inline-block;
+    margin-top:6px;
+    color:#4ade80;
+}
+
+.desc{
+    font-size:12px;
     color:#aaa;
-    font-size:13px;
+    margin-top:8px;
+}
+
+/* ================= TOOLS PAGE PANEL ================= */
+.panel{
+    margin-top:30px;
+    padding:20px;
+    background:rgba(255,255,255,0.04);
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+textarea,input{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    background:rgba(0,0,0,0.4);
+    border:1px solid rgba(255,255,255,0.1);
+    color:white;
+}
+
+button{
+    margin-top:10px;
+    background:#4ade80;
+    border:none;
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+/* LOGS */
+.logs{
+    margin-top:15px;
+    height:200px;
+    overflow:auto;
+    background:rgba(0,0,0,0.35);
+    padding:10px;
+    font-family:monospace;
+    font-size:12px;
+    border-radius:10px;
 }
 
 </style>
@@ -179,101 +207,69 @@ body:before{
     <div class="blob blob2"></div>
 </div>
 
-<div class="nav">
-    <div class="logo">🚀 Clipster PRO</div>
-    <button>Dashboard</button>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h2>🚀 Clipster PRO</h2>
+
+<div class="nav-item">Dashboard</div>
+<div class="nav-item">Campaigns</div>
+<div class="nav-item">Campaign Manager</div>
+<div class="nav-item">Team Hub</div>
+<div class="nav-item">Submissions</div>
+<div class="nav-item">Settings</div>
+
 </div>
 
+<!-- MAIN -->
+<div class="main">
+
+<!-- HERO -->
 <div class="hero">
-    <h1>Automate Clipster Workflow</h1>
-
-    <p style="color:#aaa;max-width:700px;margin:auto;">
-        Campaign automation, reel processing, scraping and team workflow system.
-    </p>
-
-    <!-- ================= ACTIVE CAMPAIGNS (NEW FEATURE) ================= -->
-    <div class="ticker-wrap">
-        <div class="ticker">
-
-            <div class="campaign">
-                <b>CS2SKIN.COM</b>
-                <small>CS2 Campaign</small>
-                <small>Upload CS2 gameplay with logo overlay</small>
-            </div>
-
-            <div class="campaign">
-                <b>HELLCASE</b>
-                <small>CS2 Campaign</small>
-                <small>Case opening reels required</small>
-            </div>
-
-            <div class="campaign">
-                <b>TRADEIT.GG</b>
-                <small>Trading Campaign</small>
-                <small>Market highlight content</small>
-            </div>
-
-        </div>
-    </div>
+<h1>Dashboard Overview</h1>
+<p>Manage campaigns, teams, and automation workflows for Clipster.gg</p>
 </div>
 
-<!-- ================= TOOLS ================= -->
-<div class="section">
+<!-- ACTIVE CAMPAIGNS -->
+<div class="campaigns">
 
-<h2>Tool Suite</h2>
+<h3>🔥 Active Campaigns</h3>
 
-<div class="grid">
+<div class="campaign-row">
+<div class="scroll-left">
 
-<div class="card">
-<h3>Instagram Scraper</h3>
-<p>Extract reels from pages.</p>
+<div class="campaign-card">
+<h4>cs2skin.com</h4>
+<span class="tag">CS2 Campaign</span>
+<div class="desc">Upload CS2 gameplay with cs2skin branding overlay</div>
 </div>
 
-<div class="card">
-<h3>Reel Editor</h3>
-<p>Crop + background replacement.</p>
+<div class="campaign-card">
+<h4>hellcase</h4>
+<span class="tag">Case Opening</span>
+<div class="desc">Promote case openings with highlight reels</div>
 </div>
 
-<div class="card">
-<h3>Campaign Manager</h3>
-<p>Rule-based content matching system.</p>
+<div class="campaign-card">
+<h4>tradeit.gg</h4>
+<span class="tag">Trading</span>
+<div class="desc">CS2 trading content with branding required</div>
 </div>
 
-<div class="card">
-<h3>Team Hub</h3>
-<p>Track users, earnings, submissions.</p>
+</div>
 </div>
 
 </div>
 
-</div>
-
-<!-- ================= CAMPAIGN MANAGER SECTION (NEW) ================= -->
-<div class="section">
-
-<h2>Campaign Manager</h2>
-
-<div class="workspace-note">
-This system automatically validates reels against campaign rules:
-<br><br>
-✔ Detect logo presence<br>
-✔ Check campaign keyword match<br>
-✔ Auto approve/reject submissions<br>
-✔ Track per-team performance
+<!-- TOOL PLACEHOLDER (separate page later) -->
+<div class="panel">
+<h3>Tool System</h3>
+<p>Tools will be moved to a separate page (as requested).</p>
+<p>This dashboard will only handle campaigns + team analytics.</p>
 </div>
 
 </div>
-
-<!-- ================= WORKSPACE MOVED INFO ================= -->
-<div class="section">
-
-<h2>Workspace</h2>
-
-<div class="workspace-note">
-⚠ Workspace tool will be moved to a separate page ( /workspace )  
-to keep SaaS structure clean and scalable.
-</div>
-
 </div>
 
 </body>
