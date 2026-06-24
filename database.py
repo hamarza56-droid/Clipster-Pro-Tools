@@ -2,6 +2,7 @@ import sqlite3
 
 DB_NAME = "clipster.db"
 
+
 def get_connection():
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -24,7 +25,7 @@ def init_db():
     )
     """)
 
-    # TASKS (FIXED)
+    # TASKS
     cur.execute("""
     CREATE TABLE IF NOT EXISTS tasks (
         task_id TEXT PRIMARY KEY,
@@ -48,7 +49,7 @@ def init_db():
     )
     """)
 
-    # HISTORY (NEW)
+    # HISTORY
     cur.execute("""
     CREATE TABLE IF NOT EXISTS history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,6 +62,7 @@ def init_db():
 
     conn.commit()
     conn.close()
+
 
 # ================= USERS =================
 
@@ -103,15 +105,18 @@ def update_user_role(username, role):
     conn.commit()
     conn.close()
 
-# ================= TASK SYSTEM =================
+
+# ================= TASKS =================
 
 def create_task(task_id, username, pages, limit):
     conn = get_connection()
     cur = conn.cursor()
+
     cur.execute("""
         INSERT INTO tasks(task_id, username, status, pages, limit_count, created_at, progress)
         VALUES (?, ?, ?, ?, ?, datetime('now'), 0)
     """, (task_id, username, "pending", str(pages), limit))
+
     conn.commit()
     conn.close()
 
@@ -119,8 +124,10 @@ def create_task(task_id, username, pages, limit):
 def get_task(task_id):
     conn = get_connection()
     cur = conn.cursor()
+
     cur.execute("SELECT * FROM tasks WHERE task_id=?", (task_id,))
     row = cur.fetchone()
+
     conn.close()
     return dict(row) if row else None
 
@@ -128,8 +135,10 @@ def get_task(task_id):
 def get_all_tasks():
     conn = get_connection()
     cur = conn.cursor()
+
     cur.execute("SELECT * FROM tasks ORDER BY created_at DESC")
     rows = cur.fetchall()
+
     conn.close()
     return [dict(r) for r in rows]
 
@@ -137,18 +146,27 @@ def get_all_tasks():
 def update_progress(task_id, progress):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE tasks SET progress=? WHERE task_id=?", (progress, task_id))
+
+    cur.execute(
+        "UPDATE tasks SET progress=? WHERE task_id=?",
+        (progress, task_id)
+    )
+
     conn.commit()
     conn.close()
 
 
+# ================= RESULTS =================
+
 def push_result(task_id, reel_url, duration):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO results(task_id, reel_url, duration) VALUES (?, ?, ?)",
-        (task_id, reel_url, duration)
-    )
+
+    cur.execute("""
+        INSERT INTO results(task_id, reel_url, duration)
+        VALUES (?, ?, ?)
+    """, (task_id, reel_url, duration))
+
     conn.commit()
     conn.close()
 
@@ -156,19 +174,25 @@ def push_result(task_id, reel_url, duration):
 def get_results(task_id):
     conn = get_connection()
     cur = conn.cursor()
+
     cur.execute("SELECT * FROM results WHERE task_id=?", (task_id,))
     rows = cur.fetchall()
+
     conn.close()
     return [dict(r) for r in rows]
 
 
+# ================= HISTORY =================
+
 def add_history(task_id, username, total):
     conn = get_connection()
     cur = conn.cursor()
+
     cur.execute("""
         INSERT INTO history(task_id, username, created_at, total_reels)
         VALUES (?, ?, datetime('now'), ?)
     """, (task_id, username, total))
+
     conn.commit()
     conn.close()
 
@@ -176,7 +200,13 @@ def add_history(task_id, username, total):
 def get_history(username):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM history WHERE username=? ORDER BY created_at DESC", (username,))
+
+    cur.execute(
+        "SELECT * FROM history WHERE username=? ORDER BY created_at DESC",
+        (username,)
+    )
+
     rows = cur.fetchall()
     conn.close()
+
     return [dict(r) for r in rows]
