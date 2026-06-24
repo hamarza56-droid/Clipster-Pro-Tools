@@ -1,5 +1,8 @@
 from flask import Flask, request, jsonify, render_template, session, redirect, send_file
 import hashlib, random, secrets, uuid, os, zipfile
+import os
+
+os.environ["PATH"] += ":" + os.path.join(os.getcwd(), "ffmpeg-bin")
 from database import *
 
 app = Flask(__name__)
