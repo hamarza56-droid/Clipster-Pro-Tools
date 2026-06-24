@@ -22,17 +22,30 @@ def run():
     for task in tasks:
 
         task_id = task["task_id"]
-        full = requests.get(f"{BASE_URL}/get_task/{task_id}").json()
-        t = full["task"]
+        print("Processing:", task_id)
 
-        pages = ast.literal_eval(t["pages"])
-        limit = int(t["limit_count"])
+        full = requests.get(f"{BASE_URL}/get_task/{task_id}").json()
+        task_data = full["task"]
+
+        pages = ast.literal_eval(task_data["pages"])
+        limit = task_data["limit_count"]
 
         total = len(pages)
+
+        # mark running + progress 0
+        requests.post(BASE_URL + "/push_result", json={
+            "task_id": task_id,
+            "reel": "STARTED",
+            "duration": 0
+        })
 
         done = 0
 
         for page in pages:
+
+            if check_cancel(task_id):
+                print("Cancelled:", task_id)
+                return
 
             for i in range(limit):
 
@@ -41,10 +54,9 @@ def run():
 
                 time.sleep(0.2)
 
-                push(task_id, reel, duration)
+                push_result(task_id, reel, duration)
 
             done += 1
-
             progress = int((done / total) * 100)
 
             requests.post(BASE_URL + "/update_progress", json={
@@ -52,7 +64,7 @@ def run():
                 "progress": progress
             })
 
-        print("DONE:", task_id)
+        print("Done:", task_id)
 
 
 if __name__ == "__main__":
