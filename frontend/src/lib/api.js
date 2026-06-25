@@ -38,6 +38,19 @@ export const api = {
   uploadClip: (formData) =>
     fetch(`${BASE}/clips`, { method: "POST", body: formData }).then(handleResponse),
 
+  uploadClipsBulk: (formData) =>
+    fetch(`${BASE}/clips/bulk`, { method: "POST", body: formData }).then(handleResponse),
+
+  startBulkProcess: (campaignId, options) =>
+    fetch(`${BASE}/clips/bulk-process/${campaignId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(options),
+    }).then(handleResponse),
+
+  getBulkStatus: (campaignId) =>
+    fetch(`${BASE}/clips/bulk-status/${campaignId}`).then(handleResponse),
+
   detectLogo: (clipId) =>
     fetch(`${BASE}/clips/${clipId}/detect-logo`, { method: "POST" }).then(handleResponse),
 
