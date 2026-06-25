@@ -1,8 +1,8 @@
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
 import ffprobeStatic from "ffprobe-static";
-import { Jimp } from "jimp";
-import fs from "fs";
+import JimpPkg from "jimp";
+const Jimp = JimpPkg.Jimp || JimpPkg;import fs from "fs";
 import path from "path";
 
 ffmpeg.setFfmpegPath(ffmpegPath);
