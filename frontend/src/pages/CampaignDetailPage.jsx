@@ -11,6 +11,15 @@ export default function CampaignDetailPage() {
   const [error, setError] = useState(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const bulkFileInputRef = useRef(null);
+
+  // Bulk process panel state
+  const [showBulkPanel, setShowBulkPanel] = useState(false);
+  const [bulkBackgroundType, setBulkBackgroundType] = useState("color");
+  const [bulkBackgroundColor, setBulkBackgroundColor] = useState("#0a0a0a");
+  const [bulkScalePercent, setBulkScalePercent] = useState(80);
+  const [bulkJob, setBulkJob] = useState(null);
+  const pollRef = useRef(null);
 
   function load() {
     setLoading(true);
@@ -26,6 +35,9 @@ export default function CampaignDetailPage() {
 
   useEffect(() => {
     load();
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, [id]);
 
   async function handleUpload(e) {
@@ -47,6 +59,63 @@ export default function CampaignDetailPage() {
     }
   }
 
+  async function handleBulkUpload(e) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("campaignId", id);
+      files.forEach((f) => formData.append("videos", f));
+      const result = await api.uploadClipsBulk(formData);
+      setClips((prev) => [...result.clips, ...prev]);
+      if (result.uploadedCount < result.requestedCount) {
+        setError(
+          `${result.uploadedCount} of ${result.requestedCount} files uploaded — some failed. Check filenames/formats and retry those.`
+        );
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+      if (bulkFileInputRef.current) bulkFileInputRef.current.value = "";
+    }
+  }
+
+  function startPolling() {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(async () => {
+      try {
+        const status = await api.getBulkStatus(id);
+        setBulkJob(status);
+        if (!status.running) {
+          clearInterval(pollRef.current);
+          pollRef.current = null;
+          load(); // refresh clip list to show updated statuses
+        }
+      } catch (err) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    }, 2000);
+  }
+
+  async function handleStartBulkProcess() {
+    setError(null);
+    try {
+      const result = await api.startBulkProcess(id, {
+        backgroundType: bulkBackgroundType,
+        backgroundValue: bulkBackgroundType === "color" ? bulkBackgroundColor : undefined,
+        scalePercent: bulkScalePercent,
+      });
+      setBulkJob({ running: true, total: result.total, completed: 0, failed: 0, results: [] });
+      startPolling();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   function handleClipUpdated(updatedClip) {
     setClips((prev) => prev.map((c) => (c.id === updatedClip.id ? updatedClip : c)));
   }
@@ -57,6 +126,8 @@ export default function CampaignDetailPage() {
 
   if (loading) return <div style={{ color: "var(--text-dim)" }}>Loading campaign…</div>;
   if (!campaign) return <div style={{ color: "var(--text-dim)" }}>Campaign not found.</div>;
+
+  const pendingCount = clips.filter((c) => c.status === "uploaded").length;
 
   return (
     <div>
@@ -77,17 +148,31 @@ export default function CampaignDetailPage() {
           </div>
         </div>
 
-        <label style={styles.uploadBtn}>
-          {uploading ? "Uploading…" : "+ Upload clip"}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="video/*"
-            style={{ display: "none" }}
-            onChange={handleUpload}
-            disabled={uploading}
-          />
-        </label>
+        <div style={styles.headerActions}>
+          <label style={styles.secondaryUploadBtn}>
+            {uploading ? "Uploading…" : "+ Upload clip"}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/*"
+              style={{ display: "none" }}
+              onChange={handleUpload}
+              disabled={uploading}
+            />
+          </label>
+          <label style={styles.uploadBtn}>
+            {uploading ? "Uploading…" : "+ Bulk upload"}
+            <input
+              ref={bulkFileInputRef}
+              type="file"
+              accept="video/*"
+              multiple
+              style={{ display: "none" }}
+              onChange={handleBulkUpload}
+              disabled={uploading}
+            />
+          </label>
+        </div>
       </header>
 
       {!campaign.logo_reference_key && (
@@ -98,6 +183,93 @@ export default function CampaignDetailPage() {
       )}
 
       {error && <div style={styles.errorBanner}>{error}</div>}
+
+      {/* Bulk processing panel */}
+      <div style={styles.bulkPanel}>
+        <div style={styles.bulkPanelHeader} onClick={() => setShowBulkPanel((s) => !s)}>
+          <span style={styles.bulkPanelTitle}>
+            Bulk apply background {pendingCount > 0 && `(${pendingCount} clip${pendingCount === 1 ? "" : "s"} waiting)`}
+          </span>
+          <span style={{ color: "var(--text-dim)", fontSize: "13px" }}>{showBulkPanel ? "▴" : "▾"}</span>
+        </div>
+
+        {showBulkPanel && (
+          <div style={styles.bulkPanelBody}>
+            <p style={styles.hint}>
+              Applies one background setting to every uploaded-but-unprocessed clip in this
+              campaign. Clips are processed one at a time on the server — this runs in the
+              background, so you can leave this page and check back.
+            </p>
+
+            <div style={styles.row}>
+              <label style={styles.smallLabel}>
+                Background type
+                <select value={bulkBackgroundType} onChange={(e) => setBulkBackgroundType(e.target.value)}>
+                  <option value="color">Solid color</option>
+                  <option value="blur">Blurred copy of clip</option>
+                </select>
+              </label>
+
+              {bulkBackgroundType === "color" && (
+                <label style={styles.smallLabel}>
+                  Color
+                  <input
+                    type="color"
+                    value={bulkBackgroundColor}
+                    onChange={(e) => setBulkBackgroundColor(e.target.value)}
+                  />
+                </label>
+              )}
+
+              <label style={styles.smallLabel}>
+                Clip size on canvas: {bulkScalePercent}%
+                <input
+                  type="range"
+                  min={40}
+                  max={100}
+                  value={bulkScalePercent}
+                  onChange={(e) => setBulkScalePercent(e.target.value)}
+                />
+              </label>
+            </div>
+
+            <p style={styles.hint}>
+              Note: image/video backgrounds aren't available in bulk mode yet — use solid color or
+              blur for batches, or process those individually via "Manage" on a clip.
+            </p>
+
+            <button
+              style={styles.primaryBtn}
+              disabled={pendingCount === 0 || (bulkJob && bulkJob.running)}
+              onClick={handleStartBulkProcess}
+            >
+              {bulkJob && bulkJob.running
+                ? "Processing…"
+                : pendingCount === 0
+                ? "No clips waiting"
+                : `Process ${pendingCount} clip${pendingCount === 1 ? "" : "s"}`}
+            </button>
+
+            {bulkJob && (
+              <div style={styles.progressArea}>
+                <div style={styles.progressBarOuter}>
+                  <div
+                    style={{
+                      ...styles.progressBarInner,
+                      width: `${bulkJob.total > 0 ? ((bulkJob.completed + bulkJob.failed) / bulkJob.total) * 100 : 0}%`,
+                    }}
+                  />
+                </div>
+                <div style={styles.progressText}>
+                  {bulkJob.completed + bulkJob.failed} / {bulkJob.total} done
+                  {bulkJob.failed > 0 && <span style={{ color: "var(--danger)" }}> · {bulkJob.failed} failed</span>}
+                  {!bulkJob.running && <span style={{ color: "var(--accent)" }}> · finished</span>}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {clips.length === 0 ? (
         <div style={styles.emptyState}>
@@ -155,6 +327,10 @@ const styles = {
     fontSize: "13px",
     color: "var(--text-dim)",
   },
+  headerActions: {
+    display: "flex",
+    gap: "10px",
+  },
   uploadBtn: {
     background: "var(--accent)",
     color: "#06150c",
@@ -162,6 +338,16 @@ const styles = {
     borderRadius: "6px",
     padding: "10px 16px",
     fontWeight: 600,
+    fontSize: "14px",
+    cursor: "pointer",
+  },
+  secondaryUploadBtn: {
+    background: "var(--panel-raised)",
+    color: "var(--text)",
+    border: "1px solid var(--border-light)",
+    borderRadius: "6px",
+    padding: "10px 16px",
+    fontWeight: 500,
     fontSize: "14px",
     cursor: "pointer",
   },
@@ -180,6 +366,82 @@ const styles = {
     borderRadius: "6px",
     fontSize: "13px",
     marginBottom: "18px",
+  },
+  bulkPanel: {
+    background: "var(--panel)",
+    border: "1px solid var(--border)",
+    borderRadius: "10px",
+    marginBottom: "20px",
+    overflow: "hidden",
+  },
+  bulkPanelHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "14px 18px",
+    cursor: "pointer",
+  },
+  bulkPanelTitle: {
+    fontWeight: 600,
+    fontSize: "14px",
+  },
+  bulkPanelBody: {
+    padding: "0 18px 18px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "14px",
+    borderTop: "1px solid var(--border)",
+    paddingTop: "16px",
+  },
+  hint: {
+    fontSize: "12px",
+    color: "var(--text-faint)",
+    margin: 0,
+    lineHeight: 1.5,
+  },
+  row: {
+    display: "flex",
+    gap: "16px",
+    alignItems: "flex-end",
+    flexWrap: "wrap",
+  },
+  smallLabel: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "5px",
+    fontSize: "12px",
+    color: "var(--text-dim)",
+  },
+  primaryBtn: {
+    background: "var(--accent)",
+    color: "#06150c",
+    border: "none",
+    borderRadius: "6px",
+    padding: "10px 16px",
+    fontWeight: 600,
+    fontSize: "13px",
+    cursor: "pointer",
+    alignSelf: "flex-start",
+  },
+  progressArea: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+  },
+  progressBarOuter: {
+    height: "8px",
+    borderRadius: "4px",
+    background: "var(--border)",
+    overflow: "hidden",
+  },
+  progressBarInner: {
+    height: "100%",
+    background: "var(--accent)",
+    transition: "width 0.3s ease",
+  },
+  progressText: {
+    fontSize: "12px",
+    color: "var(--text-dim)",
   },
   emptyState: {
     border: "1px dashed var(--border-light)",
