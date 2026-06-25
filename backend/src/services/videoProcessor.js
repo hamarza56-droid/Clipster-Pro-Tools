@@ -58,6 +58,7 @@ export async function applyBackgroundSwap({
 
   return new Promise((resolve, reject) => {
     const command = ffmpeg();
+    command.outputOptions(["-filter_threads", "1"]);
     let filterComplex;
 
     if (backgroundType === "blur") {
@@ -77,8 +78,13 @@ export async function applyBackgroundSwap({
       }
       command.input(inputPath);
       command.input(backgroundValue);
+      // The extra leading scale=2160:-1 caps the decoded working resolution
+      // of the background image before the canvas-fill scale/crop — without
+      // it, ffmpeg can decode a very large source photo at full resolution
+      // first, which is the main driver of OOM crashes on memory-constrained
+      // hosts.
       filterComplex = [
-        `[1:v]scale=${CANVAS_WIDTH}:${CANVAS_HEIGHT}:force_original_aspect_ratio=increase,crop=${CANVAS_WIDTH}:${CANVAS_HEIGHT}[bg]`,
+        `[1:v]scale=2160:-1,scale=${CANVAS_WIDTH}:${CANVAS_HEIGHT}:force_original_aspect_ratio=increase,crop=${CANVAS_WIDTH}:${CANVAS_HEIGHT}[bg]`,
         `[0:v]scale=${targetWidth}:${targetHeight}[fg]`,
         `[bg][fg]overlay=(W-w)/2:(H-h)/2[outv]`,
       ].join(";");
@@ -114,7 +120,15 @@ export async function applyBackgroundSwap({
     }
 
     command
-      .outputOptions(["-c:v libx264", "-preset fast", "-crf 20", "-pix_fmt yuv420p", "-c:a aac", "-shortest"])
+      .outputOptions([
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-crf", "23",
+        "-pix_fmt", "yuv420p",
+        "-c:a", "aac",
+        "-shortest",
+        "-threads", "1",
+      ])
       .on("start", (cmd) => console.log("[ffmpeg] start:", cmd))
       .on("error", (err) => reject(err))
       .on("end", () => resolve(outputPath))
