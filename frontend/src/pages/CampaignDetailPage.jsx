@@ -13,7 +13,7 @@ export default function CampaignDetailPage() {
   const fileInputRef = useRef(null);
   const bulkFileInputRef = useRef(null);
 
-  // Bulk process panel state
+  // Bulk process panel state.
   const [showBulkPanel, setShowBulkPanel] = useState(false);
   const [bulkBackgroundType, setBulkBackgroundType] = useState("color");
   const [bulkBackgroundColor, setBulkBackgroundColor] = useState("#0a0a0a");
