@@ -10,6 +10,17 @@ import { isConfigured } from "./services/storage.js";
 
 dotenv.config();
 
+// Without these, an unhandled async error anywhere (e.g. inside an ffmpeg
+// promise chain) crashes the whole process with no log output, and Render
+// just silently restarts the service. Logging here turns invisible crashes
+// into visible, diagnosable errors.
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION — process would have crashed silently:", err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("UNHANDLED REJECTION — process would have crashed silently:", reason);
+});
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
