@@ -41,11 +41,10 @@ export const api = {
   uploadClipsBulk: (formData) =>
     fetch(`${BASE}/clips/bulk`, { method: "POST", body: formData }).then(handleResponse),
 
-  startBulkProcess: (campaignId, options) =>
+  startBulkProcess: (campaignId, formData) =>
     fetch(`${BASE}/clips/bulk-process/${campaignId}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(options),
+      body: formData,
     }).then(handleResponse),
 
   getBulkStatus: (campaignId) =>
