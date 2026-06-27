@@ -68,7 +68,7 @@ router.post("/bulk", uploadMultiple.array("videos", 50), async (req, res) => {
 // Kick off background-swap processing for all "uploaded" (unprocessed) clips
 // in a campaign, one at a time. Returns immediately; poll /bulk-status/:campaignId
 // for progress.
-router.post("/bulk-process/:campaignId", async (req, res) => {
+router.post("/bulk-process/:campaignId", upload.single("backgroundFile"), async (req, res) => {
   const { campaignId } = req.params;
   const { backgroundType = "color", backgroundValue = "#0a0a0a", scalePercent = 80 } = req.body;
 
@@ -86,6 +86,18 @@ router.post("/bulk-process/:campaignId", async (req, res) => {
 
   if (pendingClips.length === 0) {
     return res.status(400).json({ error: "No unprocessed clips found for this campaign" });
+  }
+
+  // If a custom background image was uploaded, save it once to a stable path —
+  // every clip in this batch reuses the same file rather than re-uploading it.
+  let resolvedBackgroundValue = backgroundValue;
+  if (backgroundType === "image" && req.file) {
+    const bgPath = path.join(TMP_DIR, `bulk-bg-${campaignId}${path.extname(req.file.originalname) || ".jpg"}`);
+    fs.copyFileSync(req.file.path, bgPath);
+    fs.unlinkSync(req.file.path);
+    resolvedBackgroundValue = bgPath;
+  } else if (backgroundType === "image" && !req.file) {
+    return res.status(400).json({ error: "backgroundFile is required when backgroundType is 'image'" });
   }
 
   const job = {
@@ -116,7 +128,7 @@ router.post("/bulk-process/:campaignId", async (req, res) => {
           inputPath: videoLocalPath,
           outputPath,
           backgroundType,
-          backgroundValue,
+          backgroundValue: resolvedBackgroundValue,
           scalePercent: Number(scalePercent),
         });
 
@@ -136,6 +148,14 @@ router.post("/bulk-process/:campaignId", async (req, res) => {
       }
     }
     job.running = false;
+    // Clean up the shared bulk background file once the whole batch is done
+    if (backgroundType === "image" && fs.existsSync(resolvedBackgroundValue)) {
+      try {
+        fs.unlinkSync(resolvedBackgroundValue);
+      } catch {
+        // non-fatal cleanup failure
+      }
+    }
   })();
 });
 
