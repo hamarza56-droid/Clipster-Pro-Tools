@@ -13,10 +13,11 @@ export default function CampaignDetailPage() {
   const fileInputRef = useRef(null);
   const bulkFileInputRef = useRef(null);
 
-  // Bulk process panel state.
+  // Bulk process panel state
   const [showBulkPanel, setShowBulkPanel] = useState(false);
   const [bulkBackgroundType, setBulkBackgroundType] = useState("color");
   const [bulkBackgroundColor, setBulkBackgroundColor] = useState("#0a0a0a");
+  const [bulkBackgroundImage, setBulkBackgroundImage] = useState(null);
   const [bulkScalePercent, setBulkScalePercent] = useState(80);
   const [bulkJob, setBulkJob] = useState(null);
   const pollRef = useRef(null);
@@ -103,12 +104,20 @@ export default function CampaignDetailPage() {
 
   async function handleStartBulkProcess() {
     setError(null);
+    if (bulkBackgroundType === "image" && !bulkBackgroundImage) {
+      setError("Choose a background image before starting bulk processing.");
+      return;
+    }
     try {
-      const result = await api.startBulkProcess(id, {
-        backgroundType: bulkBackgroundType,
-        backgroundValue: bulkBackgroundType === "color" ? bulkBackgroundColor : undefined,
-        scalePercent: bulkScalePercent,
-      });
+      const formData = new FormData();
+      formData.append("backgroundType", bulkBackgroundType);
+      formData.append("scalePercent", bulkScalePercent);
+      if (bulkBackgroundType === "color") {
+        formData.append("backgroundValue", bulkBackgroundColor);
+      } else if (bulkBackgroundType === "image" && bulkBackgroundImage) {
+        formData.append("backgroundFile", bulkBackgroundImage);
+      }
+      const result = await api.startBulkProcess(id, formData);
       setBulkJob({ running: true, total: result.total, completed: 0, failed: 0, results: [] });
       startPolling();
     } catch (err) {
@@ -207,6 +216,7 @@ export default function CampaignDetailPage() {
                 <select value={bulkBackgroundType} onChange={(e) => setBulkBackgroundType(e.target.value)}>
                   <option value="color">Solid color</option>
                   <option value="blur">Blurred copy of clip</option>
+                  <option value="image">Custom image</option>
                 </select>
               </label>
 
@@ -217,6 +227,17 @@ export default function CampaignDetailPage() {
                     type="color"
                     value={bulkBackgroundColor}
                     onChange={(e) => setBulkBackgroundColor(e.target.value)}
+                  />
+                </label>
+              )}
+
+              {bulkBackgroundType === "image" && (
+                <label style={styles.smallLabel}>
+                  Image (used for every clip in this batch)
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setBulkBackgroundImage(e.target.files[0] || null)}
                   />
                 </label>
               )}
@@ -234,8 +255,9 @@ export default function CampaignDetailPage() {
             </div>
 
             <p style={styles.hint}>
-              Note: image/video backgrounds aren't available in bulk mode yet — use solid color or
-              blur for batches, or process those individually via "Manage" on a clip.
+              Note: custom video backgrounds aren't available in bulk mode yet (they're the
+              heaviest option to process) — use color, blur, or image for batches, or process a
+              video background individually via "Manage" on a clip.
             </p>
 
             <button
