@@ -6,8 +6,12 @@ const router = express.Router();
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  // Cross-site cookies (frontend and backend on different Render subdomains)
+  // require sameSite: "none", which in turn requires secure: true — browsers
+  // reject "none" cookies over plain HTTP. Render serves everything over
+  // HTTPS, so this is safe in both production and this deployment's preview.
+  secure: true,
+  sameSite: "none",
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 };
 
