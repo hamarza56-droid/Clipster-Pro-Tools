@@ -1,0 +1,395 @@
+:root {
+  /* Color tokens */
+  --bg: #0a0a0f;
+  --panel: rgba(255, 255, 255, 0.045);
+  --panel-raised: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-light: rgba(255, 255, 255, 0.14);
+  --text: #f4f3f7;
+  --text-dim: #9492a3;
+  --text-faint: #5a5868;
+  --accent: #22d3ee;
+  --accent-dim: rgba(34, 211, 238, 0.12);
+  --violet: #8b5cf6;
+  --pink: #ec4899;
+  --warning: #ffb84d;
+  --warning-dim: rgba(255, 184, 77, 0.12);
+  --danger: #ff6b6b;
+  --danger-dim: rgba(255, 107, 107, 0.12);
+  --glass-blur: 14px;
+
+  /* Type tokens */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: -20%;
+  left: -10%;
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  bottom: -20%;
+  right: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--font-body);
+}
+
+input,
+textarea,
+select {
+  font-family: var(--font-body);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--violet);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-faint);
+}
+
+/* Fixes white-text-on-white-background in dropdown option lists — most
+   browsers ignore the parent <select>'s background for the popup list and
+   fall back to system white unless <option> is styled explicitly. */
+select option {
+  background: #1a1a22;
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+#app-particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.glass-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.gradient-text {
+  background: linear-gradient(120deg, var(--violet), var(--pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-btn {
+  background: linear-gradient(120deg, var(--violet), var(--pink));
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 20px -6px rgba(139, 92, 246, 0.5);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gradient-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -4px rgba(139, 92, 246, 0.65);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 5px;
+}
+
+/* ---------- App shell layout ---------- */
+
+.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: var(--text-dim);
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  position: relative;
+}
+
+.app-sidebar {
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 18px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 10;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 36px;
+  padding: 0 6px;
+}
+
+.app-logo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--violet), var(--pink));
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.7);
+  flex-shrink: 0;
+}
+
+.app-logo-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.app-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.app-nav-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dim);
+  display: block;
+}
+
+.app-nav-item-active {
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--text);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.app-sidebar-footer {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.app-user-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.app-user-name {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-logout-btn {
+  background: none;
+  border: 1px solid var(--border-light);
+  color: var(--text-dim);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.app-logout-btn:hover {
+  color: var(--text);
+  border-color: var(--violet);
+}
+
+.app-storage-warning,
+.app-storage-ok {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app-main {
+  padding: 40px 48px;
+  max-width: 1100px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Mobile responsive breakpoint ---------- */
+
+@media (max-width: 860px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .app-sidebar {
+    position: sticky;
+    top: 0;
+    height: auto;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 16px;
+    overflow-x: auto;
+  }
+
+  .app-logo {
+    margin-bottom: 0;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .app-nav {
+    flex-direction: row;
+    flex: 0;
+    gap: 6px;
+  }
+
+  .app-nav-item {
+    white-space: nowrap;
+  }
+
+  .app-sidebar-footer {
+    margin-left: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+  }
+
+  .app-user-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .app-user-name {
+    max-width: 100px;
+  }
+
+  .app-storage-warning,
+  .app-storage-ok {
+    display: none; /* not critical info on small screens, saves space */
+  }
+
+  .app-main {
+    padding: 20px 16px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-main {
+    padding: 16px 12px;
+  }
+
+  .responsive-form-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .responsive-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px;
+  }
+}
